@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Pontos - Estórias RPG</title>
+    
+    <!-- Font Awesome para Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================================
+           CSS NATIVO GÓTICO (Baseado na Landing Page)
+        ========================================== */
+        
+        :root {
+            --bg-dark: #050505;
+            --bg-panel: #1a1a1a;
+            --text-main: #d1d5db;
+            --text-muted: #9ca3af;
+            --border-color: #333;
+            --accent-silver: #C0C0C0;
+            --accent-gold: #daa520;
+            --color-red-dim: rgba(153, 27, 27, 0.1);
+            --color-red-bright: #ef4444;
+            --color-green-bright: #10b981;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: #0c1421; 
+            color: var(--text-main);
+            font-family: 'EB Garamond', serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative; 
+            padding: 2rem;
+        }
+
+        /* Efeito de Wallpaper de Fundo */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background-image: url('img/index/wall1.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            filter: grayscale(100%); 
+            opacity: 0.3; 
+            mix-blend-mode: overlay; 
+        }
+
+        h1, h2, h3, .font-gothic { font-family: 'Cinzel', serif; text-transform: uppercase; }
+
+        /* Container Principal */
+        .calculator-container {
+            background-color: rgba(12, 20, 33, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 2rem;
+            border-radius: 4px;
+            backdrop-filter: grayscale(100%) blur(3px);
+            -webkit-backdrop-filter: grayscale(100%) blur(3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+        }
+
+        /* Decorações de Canto */
+        .corner-decor {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border-color: var(--accent-silver);
+            border-style: solid;
+            pointer-events: none;
+        }
+        .top-left { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+        .top-right { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
+        .bottom-left { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
+        .bottom-right { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+        /* Título */
+        .metallic-text {
+            background: linear-gradient(to bottom, #ffffff 0%, #a0a0a0 40%, #505050 50%, #a0a0a0 60%, #ffffff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.5);
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+
+        /* Painel de Pontos */
+        .points-display {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .points-box h3 {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .points-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-silver);
+            font-family: 'Cinzel', serif;
+        }
+
+        .growth-points {
+            color: var(--accent-gold);
+        }
+
+        /* Lista de Atributos */
+        .attribute-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .attribute-row:last-child { border-bottom: none; }
+
+        .attribute-label {
+            font-size: 1.2rem;
+            color: var(--text-main);
+            font-family: 'Cinzel', serif;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-control {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-panel);
+            color: var(--text-main);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-control:hover:not(:disabled) {
+            border-color: var(--accent-silver);
+            background-color: #333;
+        }
+
+        .btn-control:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .btn-minus:hover:not(:disabled) { color: var(--color-red-bright); border-color: var(--color-red-bright); }
+        .btn-plus:hover:not(:disabled) { color: var(--color-green-bright); border-color: var(--color-green-bright); }
+
+        .attribute-value {
+            width: 40px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            font-family: 'Cinzel', serif;
+        }
+
+        /* Rodapé da Ferramenta */
+        .tool-footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .btn-reset {
+            background: transparent;
+            border: 1px solid var(--color-red-bright);
+            color: var(--color-red-bright);
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+            cursor: pointer;
+            font-family: 'Cinzel', serif;
+            transition: all 0.3s;
+        }
+
+        .btn-reset:hover {
+            background: var(--color-red-bright);
+            color: white;
+        }
+
+        .home-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--text-muted);
+            text-decoration: underline;
+        }
+        .home-link:hover { color: var(--text-main); }
+
+    </style>
+</head>
+<body>
+
+    <div class="calculator-container">
+        <!-- Decorações de Canto -->
+        <div class="corner-decor top-left"></div>
+        <div class="corner-decor top-right"></div>
+        <div class="corner-decor bottom-left"></div>
+        <div class="corner-decor bottom-right"></div>
+
+        <h1 class="metallic-text">Calculadora de Atributos</h1>
+
+        <div class="points-display">
+            <div class="points-box">
+                <h3 class="font-gothic">Pontos Disponíveis</h3>
+                <div id="points-available" class="points-value">4</div>
+            </div>
+            <div class="points-box">
+                <h3 class="font-gothic">Pontos de Crescimento</h3>
+                <div id="points-growth" class="points-value growth-points">0</div>
+            </div>
+        </div>
+
+        <div id="attributes-list">
+            <!-- Atributos gerados via JS -->
+        </div>
+
+        <div class="tool-footer">
+            <p>Limite de Atributos: Mínimo -1 | Máximo 3</p>
+            <button class="btn-reset" onclick="resetCalculator()">Resetar Distribuição</button>
+            <br>
+            <a href="index.html" class="home-link">← Voltar para Início</a>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURAÇÃO ---
+        const INITIAL_POINTS = 4;
+        const MIN_VALUE = -1;
+        const MAX_VALUE = 3;
+        
+        // Estado inicial
+        const attributes = [
+            { id: 'forca', name: 'Força', value: 0 },
+            { id: 'destreza', name: 'Destreza', value: 0 },
+            { id: 'fortitude', name: 'Fortitude', value: 0 },
+            { id: 'discernimento', name: 'Discernimento', value: 0 },
+            { id: 'criatividade', name: 'Criatividade', value: 0 },
+            { id: 'vontade', name: 'Vontade', value: 0 }
+        ];
+
+        let pointsSpent = 0; // Pontos gastos (pode ser negativo se diminuir atributos)
+        
+        // --- FUNÇÕES ---
+
+        function calculatePoints() {
+            // Soma todos os valores atuais dos atributos
+            // Se um atributo é -1, ele conta como -1 na soma (liberando 1 ponto)
+            // Se é 2, ele custa 2 pontos.
+            const totalAttributeValues = attributes.reduce((sum, attr) => sum + attr.value, 0);
+            
+            // Pontos Restantes = Pontos Iniciais - Soma dos Atributos
+            let remaining = INITIAL_POINTS - totalAttributeValues;
+            let growth = 0;
+
+            // Se sobrar pontos positivos, eles vão para crescimento?
+            // A regra diz: "Você pode escolher guardar pontos não gastos... considerados pontos de crescimento."
+            // Se a soma dos atributos for menor que 4, sobra pontos -> Crescimento.
+            // Se a soma for maior que 4 (impossível pelas regras de criação sem crescimento prévio, mas vamos travar),
+            // na verdade o sistema permite gastar, mas aqui é criação. 
+            // Vamos assumir que "Pontos Disponíveis" vira 0 e o resto vai pra "Crescimento" se positivo.
+            
+            const pointsAvailableEl = document.getElementById('points-available');
+            const pointsGrowthEl = document.getElementById('points-growth');
+            
+            if (remaining >= 0) {
+                if (pointsAvailableEl) {
+                    pointsAvailableEl.textContent = remaining; // Mostra quantos ainda pode gastar
+                    pointsAvailableEl.style.color = '#C0C0C0';
+                }
+                if (pointsGrowthEl) pointsGrowthEl.textContent = remaining;  // O que sobrar é crescimento potencial
+            } else {
+                // Se o usuário tentar gastar mais que 4 (ex: botar tudo em 3),
+                // tecnicamente na criação não pode, mas a calculadora deve mostrar negativo ou travar?
+                // Vamos permitir visualmente mas indicar negativo em vermelho nos disponíveis
+                if (pointsAvailableEl) {
+                    pointsAvailableEl.textContent = remaining;
+                    pointsAvailableEl.style.color = '#ef4444';
+                }
+                if (pointsGrowthEl) pointsGrowthEl.textContent = "0";
+            }
+        }
+
+        function updatePointsDisplay() {
+            calculatePoints();
+        }
+
+        function renderAttributes() {
+            const container = document.getElementById('attributes-list');
+            container.innerHTML = '';
+
+            attributes.forEach(attr => {
+                const row = document.createElement('div');
+                row.className = 'attribute-row';
+                row.innerHTML = `
+                    <span class="attribute-label">${attr.name}</span>
+                    <div class="control-group">
+                        <button class="btn-control btn-minus" onclick="changeValue('${attr.id}', -1)" ${attr.value <= MIN_VALUE ? 'disabled' : ''}>-</button>
+                        <span class="attribute-value" id="val-${attr.id}">${attr.value}</span>
+                        <button class="btn-control btn-plus" onclick="changeValue('${attr.id}', 1)" ${attr.value >= MAX_VALUE ? 'disabled' : ''}>+</button>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+            updatePointsDisplay();
+        }
+
+        function changeValue(id, change) {
+            const attr = attributes.find(a => a.id === id);
+            const newValue = attr.value + change;
+
+            // Validação de limites (-1 a 3)
+            if (newValue < MIN_VALUE || newValue > MAX_VALUE) return;
+
+            attr.value = newValue;
+            
+            // Recalcula o custo total
+            // Cada ponto acima de 0 custa 1 ponto da reserva
+            // Cada ponto abaixo de 0 devolve 1 ponto para a reserva
+            calculatePoints();
+            
+            renderAttributes(); // Re-renderiza para atualizar estados dos botões
+        }
+
+        function resetCalculator() {
+            attributes.forEach(attr => attr.value = 0);
+            calculatePoints();
+            renderAttributes();
+        }
+
+        // --- INICIALIZAÇÃO ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderAttributes();
+        });
+
+    </script>
+</body>
+</html>

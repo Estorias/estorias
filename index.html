@@ -1,0 +1,497 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estórias RPG - Landing Page</title>
+    
+    <!-- Font Awesome para Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================================
+           CSS NATIVO COMPLETO (Zero Dependências)
+        ========================================== */
+        
+        :root {
+            --bg-dark: #050505;
+            --bg-panel: #1a1a1a;
+            --text-main: #d1d5db;
+            --text-muted: #9ca3af;
+            --border-color: #333;
+            --accent-silver: #C0C0C0;
+            --accent-gold: #daa520;
+            --color-red-dim: rgba(153, 27, 27, 0.1);
+            --color-amber-dim: rgba(180, 83, 9, 0.1);
+            --color-purple-dim: rgba(88, 28, 135, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: #0c1421; 
+            color: var(--text-main);
+            font-family: 'EB Garamond', serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative; 
+        }
+
+        /* Efeito de Wallpaper de Fundo (Geral) */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            
+            background-image: url('img/index/wall1.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+
+            /* Efeito monocromático e opacidade para o corpo geral */
+            filter: grayscale(100%); 
+            opacity: 0.3; 
+            mix-blend-mode: overlay; 
+        }
+        
+        /* Pseudo-elemento específico para o HEADER (Imagem Limpa) */
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; 
+            height: 600px; 
+            z-index: -1;
+            
+            background-image: url('img/index/wall1.jpg');
+            background-size: cover;
+            background-position: center top;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            
+            filter: none;
+            opacity: 1;
+            
+            mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+        }
+
+        /* --- ESTILO DA CAIXA DO HEADER --- */
+        .header-box {
+            background-color: rgba(12, 20, 33, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 2.5rem 3rem;
+            border-radius: 4px;
+            backdrop-filter: grayscale(100%) blur(3px);
+            -webkit-backdrop-filter: grayscale(100%) blur(3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Tipografia */
+        h1, h2, h3, .font-gothic { font-family: 'Cinzel', serif; text-transform: uppercase; }
+        a { text-decoration: none; color: inherit; }
+
+        /* Utilitários */
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .uppercase { text-transform: uppercase; }
+        .italic { font-style: italic; }
+        .font-bold { font-weight: bold; }
+        
+        /* Tamanhos */
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .text-4xl { font-size: 2.25rem; }
+        .text-6xl { font-size: 3.75rem; }
+        
+        /* Cores */
+        .text-gray-300 { color: #d1d5db; }
+        .text-gray-400 { color: #9ca3af; }
+        .text-gray-500 { color: #6b7280; }
+        .text-white { color: #ffffff; }
+        .text-red-400 { color: #f87171; }
+        .text-red-100 { color: #fee2e2; }
+        .text-amber-100 { color: #fef3c7; }
+        .text-purple-300 { color: #d8b4fe; }
+        .text-purple-400 { color: #c084fc; }
+        .text-blue-400 { color: #60a5fa; }
+        .text-cyan-400 { color: #22d3ee; }
+        .text-yellow-700 { color: #a16207; }
+
+        /* Efeito Metalizado */
+        .metallic-text {
+            background: linear-gradient(to bottom, #ffffff 0%, #a0a0a0 40%, #505050 50%, #a0a0a0 60%, #ffffff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.5);
+            font-weight: 900;
+            letter-spacing: 0.1em;
+            display: inline-block;
+        }
+        
+        /* Layout */
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-6 { gap: 1.5rem; }
+        .gap-8 { gap: 2rem; }
+        .w-full { width: 100%; }
+        .h-full { height: 100%; }
+        .flex-grow { flex-grow: 1; }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+        
+        /* Espaçamento */
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .p-8 { padding: 2rem; }
+        .p-16 { padding: 4rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+        .py-16 { padding-top: 4rem; padding-bottom: 4rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .px-10 { padding-left: 2.5rem; padding-right: 2.5rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .mb-10 { margin-bottom: 2.5rem; }
+        .mb-12 { margin-bottom: 3rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-12 { margin-top: 3rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+
+        /* Containers */
+        .max-w-6xl { max-width: 72rem; width: 100%; }
+        .max-w-4xl { max-width: 56rem; }
+        .max-w-3xl { max-width: 48rem; }
+        .max-w-2xl { max-width: 42rem; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .top-0 { top: 0; }
+        .left-0 { left: 0; }
+        .right-0 { right: 0; }
+        .bottom-0 { bottom: 0; }
+        .z-20 { z-index: 20; }
+        .z-30 { z-index: 30; }
+
+        /* Header */
+        header {
+            background-color: transparent;
+            padding-bottom: 4rem; 
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .logo-img {
+            width: 12rem;
+            height: 12rem;
+            object-fit: contain;
+            filter: drop-shadow(0 0 15px rgba(0,0,0,0.8));
+        }
+
+        /* Navegação - CORREÇÃO DE Z-INDEX */
+        nav {
+            position: sticky;
+            top: 0;
+            background-color: #1a1a1a;
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            /* Define a camada como a mais alta (exceto modais) */
+            z-index: 100; 
+        }
+
+        .nav-btn {
+            width: 33.33%;
+            padding: 1rem 0;
+            background: transparent;
+            border: none;
+            border-bottom: 4px solid transparent;
+            color: #9ca3af;
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover { color: white; background-color: rgba(255,255,255,0.05); }
+        .nav-btn.active-tab { color: white; border-bottom-color: var(--accent-silver); background-color: rgba(255,255,255,0.05); }
+
+        /* Slider Main */
+        .slide-wrapper {
+            overflow: hidden;
+            width: 100%;
+            background-color: rgba(0,0,0,0.6); 
+            flex-grow: 1;
+            border-top: 1px solid #333; 
+        }
+
+        .slide-container {
+            display: flex;
+            width: 300%; 
+            transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .slide-section {
+            width: 33.33%; 
+            flex-shrink: 0;
+            border-right: 1px solid #1f2937;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .bg-grad-red { background: linear-gradient(to bottom, transparent, var(--color-red-dim)); }
+        .bg-grad-amber { background: linear-gradient(to bottom, transparent, var(--color-amber-dim)); }
+        .bg-grad-purple { background: linear-gradient(to bottom, transparent, var(--color-purple-dim)); }
+
+        .info-card {
+            background-color: rgba(17, 24, 39, 0.8); 
+            border: 1px solid #374151;
+            border-radius: 0.25rem;
+            padding: 1.5rem;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .btn-gothic {
+            background: linear-gradient(180deg, #2d3748 0%, #1a202c 100%);
+            border: 1px solid #4a5568;
+            color: #e2e8f0;
+            padding: 1rem 2.5rem;
+            font-size: 1.25rem;
+            border-radius: 0.25rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+        .btn-gothic:hover { border-color: #a0aec0; transform: translateY(-2px); box-shadow: 0 0 20px rgba(160, 174, 192, 0.3); color: white; }
+
+        .gothic-frame {
+            position: relative;
+            height: 24rem;
+            background-color: #111;
+            border: 1px solid #444;
+            box-shadow: 0 0 15px rgba(0,0,0,0.8);
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .gothic-frame::before {
+            content: '';
+            position: absolute;
+            top: -5px; left: -5px; right: -5px; bottom: -5px;
+            border: 1px solid #222;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .gothic-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%);
+            opacity: 0.6;
+            transition: all 0.7s ease;
+        }
+
+        .gothic-frame:hover img { transform: scale(1.1); filter: grayscale(0%); opacity: 1; }
+
+        .frame-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.5rem;
+            background: linear-gradient(to top, black 10%, transparent);
+            transform: translateY(100%);
+            transition: transform 0.5s ease;
+            z-index: 2;
+        }
+
+        .gothic-frame:hover .frame-caption { transform: translateY(0); }
+
+        .tool-list { list-style: none; padding: 0; }
+        .tool-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #333;
+            cursor: pointer;
+            transition: padding 0.2s;
+            color: #9ca3af;
+        }
+        .tool-item:hover { padding-left: 0.5rem; color: white; }
+        .tool-icon { margin-right: 0.75rem; color: #c084fc; }
+        .tool-arrow { font-size: 0.75rem; opacity: 0; transition: opacity 0.2s; }
+        .tool-item:hover .tool-arrow { opacity: 1; }
+
+        footer {
+            background-color: #0f0c0a;
+            border-top: 1px solid rgba(234, 179, 8, 0.2);
+            text-align: center;
+            padding-top: 3rem;
+            padding-bottom: 1.5rem;
+            margin-top: auto;
+        }
+
+        .social-links { display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; }
+        .social-icon { font-size: 1.8rem; color: #8B4513; transition: transform 0.2s, color 0.2s; }
+        .social-icon:hover { color: #D2691E; transform: translateY(-3px); }
+
+        @media (min-width: 768px) {
+            .md\:flex-row { flex-direction: row; }
+            .md\:text-left { text-align: left; }
+            .md\:text-5xl { font-size: 3rem; }
+            .md\:text-8xl { font-size: 6rem; }
+            .md\:text-2xl { font-size: 1.5rem; }
+            .md\:p-16 { padding: 4rem; }
+            .md\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+            .nav-btn { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="py-16 px-4">
+        <!-- Caixa do Header (Logo + Título) -->
+        <div class="header-box">
+            <div class="flex flex-col md:flex-row items-center justify-center gap-8">
+                <div class="relative">
+                    <img src="img/logo.png" alt="Logo Estórias" class="logo-img" onerror="this.src='https://placehold.co/200x200/1a1e24/silver?text=E'">
+                </div>
+                <div class="text-center md:text-left">
+                    <h1 class="metallic-text text-6xl md:text-8xl m-0">STÓRIAS</h1>
+                    <p class="text-gray-400 text-lg md:text-2xl mt-2 font-gothic" style="letter-spacing: 0.1em; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 0.5rem; display: inline-block; text-shadow: 0 2px 4px black;">Sistema de RPG Narrativo</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navegação -->
+    <nav>
+        <div class="max-w-6xl mx-auto flex justify-center w-full">
+            <button onclick="goToSlide(0)" id="tab-0" class="nav-btn active-tab"><i class="fa-solid fa-users" style="margin-right: 0.5rem;"></i> Jogadores</button>
+            <button onclick="goToSlide(1)" id="tab-1" class="nav-btn"><i class="fa-solid fa-dragon" style="margin-right: 0.5rem;"></i> Mestre</button>
+            <button onclick="goToSlide(2)" id="tab-2" class="nav-btn"><i class="fa-solid fa-scroll" style="margin-right: 0.5rem;"></i> Ferramentas</button>
+        </div>
+    </nav>
+
+    <!-- Slider -->
+    <main class="slide-wrapper">
+        <div class="slide-container" id="mainSlider">
+            <!-- JOGADORES -->
+            <div class="slide-section bg-grad-red p-8 md:p-16">
+                <h2 class="text-4xl md:text-5xl text-white mb-6 font-gothic" style="border-bottom: 2px solid rgba(127, 29, 29, 0.5); padding-bottom: 0.5rem; display: inline-block;">Para os Jogadores</h2>
+                <p class="text-xl text-gray-300 max-w-3xl mb-8 text-center" style="line-height: 1.6;">Crie sua lenda em 6 passos simples. Um sistema sem classes focado em interpretação, onde atributos físicos e mentais guiam suas ações.</p>
+                <a href="fp.html" class="btn-gothic text-red-100 mb-10"><span>Acessar Ficha</span> <i class="fa-solid fa-skull" style="margin-left: 0.75rem;"></i></a>
+                <div class="max-w-6xl w-full grid md:grid-cols-3 text-left">
+                    <div class="info-card"><h3 class="text-xl text-red-400 mb-2 font-gothic">Atributos</h3><p class="text-sm text-gray-500">Mentais (Criatividade, Vontade) e Físicos (Força, Destreza) definem quem você é.</p></div>
+                    <div class="info-card"><h3 class="text-xl text-red-400 mb-2 font-gothic">Testes d12</h3><p class="text-sm text-gray-500">Mecânica simples: Falha, Sucesso Moderado ou Sucesso Completo.</p></div>
+                    <div class="info-card"><h3 class="text-xl text-red-400 mb-2 font-gothic">Ideais</h3><p class="text-sm text-gray-500">Sua bússola moral. Ganhe bônus por interpretar suas crenças.</p></div>
+                </div>
+            </div>
+
+            <!-- MESTRE -->
+            <div class="slide-section bg-grad-amber p-8 md:p-16">
+                <h2 class="text-4xl md:text-5xl text-white mb-6 font-gothic" style="border-bottom: 2px solid rgba(120, 53, 15, 0.5); padding-bottom: 0.5rem; display: inline-block;">O Grimório do Mestre</h2>
+                <blockquote class="text-2xl italic text-amber-100 mb-10 max-w-4xl text-center" style="opacity: 0.8;">"A conveniência narrativa é o pilar. Se não é importante para a história, não é importante para as mecânicas."</blockquote>
+                <p class="text-lg text-gray-300 max-w-2xl mb-10 text-center">Gerencie sua mesa com a fluidez necessária. Acesse o VTT (Virtual Tabletop) integrado.</p>
+                <a href="pm.html" class="btn-gothic text-amber-100"><span>Acessar VTT / Painel</span> <i class="fa-solid fa-chess-rook" style="margin-left: 0.75rem;"></i></a>
+            </div>
+
+            <!-- FERRAMENTAS -->
+            <div class="slide-section bg-grad-purple p-8 md:p-16">
+                <h2 class="text-4xl md:text-5xl text-white mb-12 font-gothic" style="border-bottom: 2px solid rgba(88, 28, 135, 0.5); padding-bottom: 0.5rem; display: inline-block;">Ferramentas do Sistema</h2>
+                <div class="max-w-2xl w-full bg-panel border border-gray-700 relative" style="background-color: #111827; padding: 2px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);">
+                    <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-purple-500"></div>
+                    <div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-purple-500"></div>
+                    <div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-purple-500"></div>
+                    <div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-purple-500"></div>
+                    <div class="p-6" style="background-color: rgba(0,0,0,0.6);">
+                        <h3 class="text-2xl text-purple-300 mb-6 text-left font-gothic">Utilitários Rápidos</h3>
+                        <ul class="tool-list text-left text-lg text-gray-400 font-body">
+                            <li class="tool-item group"><span><i class="fa-solid fa-dice-d20 tool-icon"></i> Gerador de NPCs</span><i class="fa-solid fa-chevron-right tool-arrow"></i></li>
+                            <li class="tool-item group"><span><i class="fa-solid fa-book-skull tool-icon"></i> Biblioteca de Feitiços</span><i class="fa-solid fa-chevron-right tool-arrow"></i></li>
+                            <li class="tool-item group"><span><i class="fa-solid fa-map tool-icon"></i> Calculadora de Viagem</span><i class="fa-solid fa-chevron-right tool-arrow"></i></li>
+                            <li class="tool-item group"><span><i class="fa-solid fa-scroll tool-icon"></i> Lista de Equipamentos</span><i class="fa-solid fa-chevron-right tool-arrow"></i></li>
+                            <li class="tool-item group"><span><a href="estórias.pdf" target="_blank" style="display: flex; align-items: center;"><i class="fa-solid fa-file-pdf tool-icon" style="color: #ef4444;"></i> Baixar PDF Completo</a></span><i class="fa-solid fa-download tool-arrow"></i></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Galeria -->
+    <section class="py-16 px-4" style="background-color: rgba(0, 0, 0, 0.85); border-top: 1px solid #1f2937;">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-center text-3xl text-gray-500 mb-10 font-gothic" style="letter-spacing: 0.1em;">Um sistema, Vários Mundos</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="gothic-frame group">
+                    <img src="img/index/item1.png" alt="Cenário 1" onerror="this.src='https://placehold.co/400x600/222/444?text=Imagem+1'">
+                    <div class="frame-caption"><h3 class="text-purple-400 text-xl mb-2 font-gothic">A Cidadela Perdida</h3><p class="text-sm text-gray-300 font-body">Um local esquecido pelo tempo.</p></div>
+                </div>
+                <div class="gothic-frame group">
+                    <img src="img/index/item2.png" alt="Cenário 2" onerror="this.src='https://placehold.co/400x600/222/444?text=Imagem+2'">
+                    <div class="frame-caption"><h3 class="text-blue-400 text-xl mb-2 font-gothic">O Cavaleiro Espectral</h3><p class="text-sm text-gray-300 font-body">O guardião eterno.</p></div>
+                </div>
+                <div class="gothic-frame group">
+                    <img src="img/index/item3.png" alt="Cenário 3" onerror="this.src='https://placehold.co/400x600/222/444?text=Imagem+3'">
+                    <div class="frame-caption"><h3 class="text-cyan-400 text-xl mb-2 font-gothic">Grimório Antigo</h3><p class="text-sm text-gray-300 font-body">Páginas gastas contendo rituais proibidos.</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="social-links">
+                <a href="#" class="social-icon"><i class="fa-brands fa-youtube"></i></a>
+                <a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+                <a href="#" class="social-icon"><i class="fa-brands fa-tiktok"></i></a>
+            </div>
+            <div class="text-yellow-700 text-sm font-gothic" style="opacity: 0.7;">
+                <p>Sistema Estórias © 2025. Todos os direitos reservados.</p>
+                <p class="text-xs mt-2 opacity-50">Criado pela comunidade. Arte e design inspirados no gótico moderno.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function goToSlide(index) {
+            const slider = document.getElementById('mainSlider');
+            slider.style.transform = `translateX(${index * -33.333}%)`;
+            const buttons = document.querySelectorAll('nav button');
+            buttons.forEach((btn, i) => {
+                if(i === index) { btn.classList.add('active-tab'); } else { btn.classList.remove('active-tab'); }
+            });
+        }
+        goToSlide(0);
+    </script>
+</body>
+</html>

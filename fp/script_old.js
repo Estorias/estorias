@@ -30,51 +30,8 @@ function openFirebaseModal() {
     const modal = document.getElementById('firebase-config-modal');
     if (modal) {
         modal.style.display = 'flex';
-        
-        // --- MELHORIA: Permite fechar o modal (Modo Offline) ---
-        // Verifica se já existe um botão de fechar, se não, cria um dinamicamente
-        let closeBtn = modal.querySelector('.js-close-firebase');
-        if (!closeBtn) {
-            closeBtn = document.createElement('button');
-            closeBtn.className = 'js-close-firebase';
-            closeBtn.innerHTML = '&times;'; // X symbol
-            // Estilo para garantir que fique no topo direito
-            Object.assign(closeBtn.style, {
-                position: 'absolute',
-                top: '10px',
-                right: '15px',
-                background: 'transparent',
-                border: 'none',
-                color: '#fff',
-                fontSize: '24px',
-                cursor: 'pointer',
-                zIndex: '1000',
-                fontWeight: 'bold'
-            });
-            closeBtn.onclick = closeFirebaseModal;
-            
-            // Adiciona ao container interno se possível, ou ao modal direto
-            const innerContainer = modal.querySelector('.modal-container') || modal.querySelector('div') || modal;
-            if (window.getComputedStyle(innerContainer).position === 'static') {
-                innerContainer.style.position = 'relative';
-            }
-            innerContainer.appendChild(closeBtn);
-        }
-
-        // Fecha ao clicar fora (Overlay)
-        modal.onclick = function(e) {
-            if (e.target === modal) closeFirebaseModal();
-        };
+        // Removemos a injeção dinâmica de botões pois agora está no HTML
     }
-}
-
-// --- NOVA FUNÇÃO: FECHAR O MODAL ---
-function closeFirebaseModal() {
-    const modal = document.getElementById('firebase-config-modal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-    console.log("Modo Offline ativado: Algumas funcionalidades online estarão indisponíveis.");
 }
 
 // --- NOVO: FUNÇÃO PARA CARREGAR O ARQUIVO JSON DA CHAVE ---
@@ -94,7 +51,7 @@ function handleKeyFileSelect(event) {
                 localStorage.setItem('rpg_firebase_config', JSON.stringify(config));
                 
                 // Fecha modal
-                closeFirebaseModal();
+                document.getElementById('firebase-config-modal').style.display = 'none';
                 
                 // Inicializa
                 initializeFirebase(config);
@@ -138,7 +95,7 @@ function saveAndConnectFirebase() {
     localStorage.setItem('rpg_firebase_config', JSON.stringify(config));
     
     // Fecha modal
-    closeFirebaseModal();
+    document.getElementById('firebase-config-modal').style.display = 'none';
     
     // Inicializa
     initializeFirebase(config);
@@ -261,7 +218,7 @@ function initializeFirebase(config) {
         let draggedToken = null;
         let highestZIndex = 151;
         let contextMenuStickerId = null;
-        let lastPingTimestamp = 0; 
+        let lastPingTimestamp = 0; // NOVO
 
         // --- FUNÇÕES DE GERENCIAMENTO DE JANELAS ---
         function bringToFront(element) {
@@ -301,8 +258,6 @@ function initializeFirebase(config) {
         }
 
         function updateTokenPosition(playerName, x, y) {
-            if (!appInitialized) return; // OFFLINE PROTECTION
-
             const charName = document.getElementById('char-name').value.trim();
             if (playerName !== charName) return;
             
@@ -313,7 +268,6 @@ function initializeFirebase(config) {
         }
 
         function listenForMapChanges() {
-            if (!appInitialized) return; // OFFLINE PROTECTION
             if (unsubscribeMapListener) unsubscribeMapListener();
 
             unsubscribeMapListener = mapCollection.onSnapshot(doc => {
@@ -478,7 +432,6 @@ function initializeFirebase(config) {
         }
 
         function listenForBulletinState() {
-            if (!appInitialized) return; // OFFLINE PROTECTION
             bulletinStateRef.onSnapshot(doc => {
                 if (doc.exists) {
                     const data = doc.data();
@@ -488,8 +441,8 @@ function initializeFirebase(config) {
                             lastBulletinTimestamp = serverTimestamp;
                             if (!isBulletinBoardOpen) {
                                 document.getElementById('bulletin-notification-dot').style.display = 'block';
-                                playBulletinSound();
                             }
+                            playBulletinSound();
                         }
                     }
                 }
@@ -497,7 +450,6 @@ function initializeFirebase(config) {
         }
 
         function listenForBulletinMessages() {
-            if (!appInitialized) return; // OFFLINE PROTECTION
             const messagesContainer = document.getElementById('bulletin-board-messages');
             
             bulletinBoardCollection.orderBy('timestamp', 'desc').onSnapshot(snapshot => {
@@ -599,16 +551,6 @@ function initializeFirebase(config) {
         }
 
         async function sendMessage(messageData) {
-            if (!appInitialized) { // OFFLINE PROTECTION
-                // Se estiver offline, apenas mostra localmente como 'sistema' para feedback
-                const messagesContainer = document.getElementById('chat-messages');
-                const msgElement = document.createElement('div');
-                msgElement.className = 'chat-message-system';
-                msgElement.innerHTML = `<span>Você está offline. Mensagem não enviada ao servidor.</span>`;
-                messagesContainer.appendChild(msgElement);
-                return;
-            }
-
             const text = messageData.text.trim();
             if (text === '') return;
 
@@ -635,7 +577,6 @@ function initializeFirebase(config) {
         }
 
         function listenForMessages() {
-            if (!appInitialized) return; // OFFLINE PROTECTION
             const messagesContainer = document.getElementById('chat-messages');
             const listenerTimestamp = new Date();
 
@@ -727,11 +668,7 @@ function initializeFirebase(config) {
 
             const message = `${charName} - Teste de ${attrName}: ${total} (${rollDetails} + ${attrValue}${modifier !== 0 ? (modifier > 0 ? ' + ' : ' ') + modifier : ''}${conditionsText})`;
             
-            if (appInitialized) {
-                sendMessage({ text: message, isSystem: true });
-            } else {
-                alert(message + " (Offline)");
-            }
+            sendMessage({ text: message, isSystem: true });
             closeRollModal();
         }
 
@@ -753,11 +690,7 @@ function initializeFirebase(config) {
             const charName = document.getElementById('char-name').value.trim() || 'Anônimo';
             const message = `${charName} - Rolagem Customizada: ${total} (${rollDetails}${modifier !== 0 ? (modifier > 0 ? ' + ' : ' ') + modifier : ''})`;
 
-            if (appInitialized) {
-                sendMessage({ text: message, isSystem: true });
-            } else {
-                alert(message + " (Offline)");
-            }
+            sendMessage({ text: message, isSystem: true });
             closeCustomRollModal();
         }
 
@@ -1626,8 +1559,6 @@ function initializeFirebase(config) {
 
         // --- PLAYER PRESENCE & REAL-TIME SYNC ---
         function updatePresence() {
-            if (!appInitialized) return; // OFFLINE PROTECTION
-
             const charName = document.getElementById('char-name').value.trim();
             if (!charName) return;
 
@@ -1667,8 +1598,6 @@ function initializeFirebase(config) {
         }
 
         function startPresenceSystem() {
-            if (!appInitialized) return; // OFFLINE PROTECTION
-
             const charName = document.getElementById('char-name').value.trim();
             if (!charName) return;
 
@@ -1683,7 +1612,6 @@ function initializeFirebase(config) {
         }
 
         function listenForMySheetChanges(charName) {
-            if (!appInitialized) return; // OFFLINE PROTECTION
             unsubscribePlayerListener = playersCollection.doc(charName).onSnapshot(doc => {
                 if (!doc.exists) return;
                 const data = doc.data();

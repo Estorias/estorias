@@ -1,34 +1,57 @@
-  /* --- Theme Engine: CSS Variables --- */
+/* --- Theme Engine: CSS Variables --- */
+        
+        /* TEMA PADRÃO: ONENARI (AGORA GÓTICO/PRATA) */
         :root, [data-theme='onenari'] {
             --font-main: 'Cinzel', serif;
             --font-condensed: 'Cinzel', serif;
-            --color-bg-primary: #0a192f;
-            --color-bg-secondary: #172a46;
-            --color-bg-tertiary: #0f223d;
-            --color-text-primary: #ccd6f6;
-            --color-text-secondary: #8892b0;
-            --color-accent: #64ffda;
-            --color-accent-hover: #52d9bc;
-            --color-border: #233554;
-            --color-red: #e64966;
-            --color-green: #64ffda;
-            --color-yellow: #ffca86;
+            --color-bg-primary: #050505;       /* Preto Absoluto */
+            --color-bg-secondary: #1a1a1a;     /* Cinza Chumbo */
+            --color-bg-tertiary: #111111;      /* Preto Fosco */
+            --color-text-primary: #d1d5db;     /* Prata Suave */
+            --color-text-secondary: #9ca3af;   /* Cinza Médio */
+            --color-accent: #C0C0C0;           /* Prata Brilhante */
+            --color-accent-hover: #e5e7eb;     /* Branco Espectra */
+            --color-border: #333333;           /* Borda Discreta */
+            --color-red: #991b1b;              /* Vermelho Sangue */
+            --color-green: #065f46;            /* Verde Esmeralda Escuro */
+            --color-yellow: #b45309;           /* Ouro Antigo */
+            
+            /* Variável especial para fundo texturizado (opcional) */
+            --bg-image: none; 
         }
 
+        /* TEMA KLON (SOMBRIO E VERMELHO) */
         [data-theme='klon'] {
             --font-main: 'Cinzel', serif;
             --font-condensed: 'Cinzel', serif;
-            --color-bg-primary: #2a0e0e;
-            --color-bg-secondary: #4d2b2b;
-            --color-bg-tertiary: #3a1f1f;
-            --color-text-primary: #f2e3c9;
-            --color-text-secondary: #c9b89b;
-            --color-accent: #c83232;
-            --color-accent-hover: #a52a2a;
-            --color-border: #6b4747;
-            --color-red: #c83232;
-            --color-green: #5a9e3a;
-            --color-yellow: #e8b33e;
+            --color-bg-primary: #1a0505;       /* Preto Avermelhado Profundo */
+            --color-bg-secondary: #2b0b0b;     /* Sangue Seco */
+            --color-bg-tertiary: #200808;      /* Marrom Escuro */
+            --color-text-primary: #ffdada;     /* Rosa Pálido */
+            --color-text-secondary: #cba6a6;   /* Cinza Rosado */
+            --color-accent: #ff4d4d;           /* Vermelho Vivo */
+            --color-accent-hover: #ff8080;     /* Vermelho Claro */
+            --color-border: #4a1a1a;           /* Borda Carmim */
+            --color-red: #ff0000;              /* Vermelho Puro */
+            --color-green: #4d7c4d;            /* Verde Desaturado */
+            --color-yellow: #d4af37;           /* Ouro */
+        }
+
+        /* TEMA VALVER (ESCURO E VERDE) */
+        [data-theme='valver'] {
+            --font-main: 'Cinzel', serif;
+            --font-condensed: 'Cinzel', serif;
+            --color-bg-primary: #051a0a;       /* Verde Floresta Negra */
+            --color-bg-secondary: #0d2b15;     /* Musgo Escuro */
+            --color-bg-tertiary: #08200e;      /* Pântano Profundo */
+            --color-text-primary: #e0f2e2;     /* Nevoeiro Verde */
+            --color-text-secondary: #8daea0;   /* Verde Acinzentado */
+            --color-accent: #4ade80;           /* Verde Espectral */
+            --color-accent-hover: #86efac;     /* Verde Luz */
+            --color-border: #1b4d2e;           /* Borda Hera */
+            --color-red: #b91c1c;              /* Vermelho Escuro */
+            --color-green: #22c55e;            /* Verde Vibrante */
+            --color-yellow: #eab308;           /* Âmbar */
         }
 
         [data-theme='cineria'] {
@@ -45,22 +68,6 @@
             --color-red: #a83232;
             --color-green: #85a832;
             --color-yellow: #d4a373;
-        }
-        
-        [data-theme='valver'] {
-            --font-main: 'Cinzel', serif;
-            --font-condensed: 'Cinzel', serif;
-            --color-bg-primary: #1e3a1e;
-            --color-bg-secondary: #3a5a3a;
-            --color-bg-tertiary: #2a4a2a;
-            --color-text-primary: #e8f5e9;
-            --color-text-secondary: #a5d6a7;
-            --color-accent: #ffb74d;
-            --color-accent-hover: #f5a623;
-            --color-border: #4a6a4a;
-            --color-red: #ef5350;
-            --color-green: #66bb6a;
-            --color-yellow: #ffb74d;
         }
 
         [data-theme='echo'] {
@@ -431,4 +438,30 @@
             10% { transform: translate(-50%, -50%) scale(1); }
             80% { opacity: 1; }
             100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+        }
+
+        /* --- Extras: Estilo Gótico da Landing Page (Opcional para uso) --- */
+        .metallic-text {
+            background: linear-gradient(to bottom, #ffffff 0%, #a0a0a0 40%, #505050 50%, #a0a0a0 60%, #ffffff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.5);
+            font-weight: 900;
+            letter-spacing: 0.1em;
+        }
+        
+        .gothic-frame {
+            position: relative;
+            border: 1px solid var(--color-border);
+            box-shadow: 0 0 15px rgba(0,0,0,0.8);
+            background-color: var(--color-bg-tertiary);
+            padding: 5px;
+        }
+        .gothic-frame::before {
+            content: '';
+            position: absolute;
+            top: -3px; left: -3px; right: -3px; bottom: -3px;
+            border: 1px solid var(--color-bg-secondary);
+            z-index: -1;
         }
