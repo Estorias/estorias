@@ -1,0 +1,378 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração Firebase - VTT & Painel</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================================
+           ESTILO TÉCNICO DARK (Mantido)
+        ========================================== */
+        
+        :root {
+            --bg-dark: #050505;
+            --text-main: #d1d5db;
+            --accent-silver: #C0C0C0;
+            --accent-gold: #daa520;
+            --color-red-dim: rgba(153, 27, 27, 0.2);
+            --color-amber-dim: rgba(180, 83, 9, 0.2);
+            --color-green-dim: rgba(20, 83, 45, 0.2);
+            --color-blue-dim: rgba(30, 58, 138, 0.2);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+        body {
+            background-color: #0c1421; 
+            color: var(--text-main);
+            font-family: 'EB Garamond', serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Fundo */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at center, #1f2937 0%, #000000 100%);
+            opacity: 0.9;
+        }
+
+        /* Tipografia */
+        h1, h2, h3, .font-title { font-family: 'Cinzel', serif; text-transform: uppercase; }
+        .font-code { font-family: 'Fira Code', monospace; }
+        
+        /* Header */
+        header {
+            padding: 2rem 1rem;
+            text-align: center;
+            background: rgba(0,0,0,0.6);
+            border-bottom: 1px solid #333;
+        }
+
+        /* Menu Fixo */
+        .sticky-nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            background-color: rgba(17, 17, 17, 0.95);
+            backdrop-filter: blur(5px);
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .nav-link {
+            padding: 1rem 1.5rem;
+            text-decoration: none;
+            color: #9ca3af;
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover { color: #fff; background-color: rgba(255,255,255,0.05); }
+        .nav-link:active, .nav-link:focus { color: var(--accent-gold); border-bottom-color: var(--accent-gold); }
+
+        /* Conteúdo */
+        main {
+            flex: 1;
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+
+        section {
+            background-color: rgba(26, 26, 26, 0.6);
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 2rem;
+            position: relative;
+        }
+
+        /* Marcador lateral */
+        section::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 3px; height: 100%;
+            background: #444;
+        }
+        section:hover::before { background: var(--accent-gold); }
+
+        h2 { color: var(--accent-silver); margin-bottom: 1rem; border-bottom: 1px solid #333; padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        
+        .step-badge {
+            background: #333;
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        ol, ul { margin-left: 1.5rem; line-height: 1.6; color: #d1d5db; }
+        li { margin-bottom: 0.5rem; }
+        strong { color: #fff; }
+        a { color: #60a5fa; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Alerta 30 dias */
+        .alert-box {
+            border: 1px solid #7f1d1d;
+            background: linear-gradient(to right, var(--color-red-dim), transparent);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .info-box {
+            border: 1px solid #d97706;
+            background: linear-gradient(to right, var(--color-amber-dim), transparent);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .success-box {
+            border: 1px solid #059669;
+            background: linear-gradient(to right, var(--color-green-dim), transparent);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .intro-box {
+            border: 1px solid #1e3a8a;
+            background: linear-gradient(to right, var(--color-blue-dim), transparent);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+        }
+
+        /* Código */
+        .code-block {
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #e6edf3;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 5px; right: 5px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            color: #c9d1d9;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .copy-btn:hover { background: #30363d; }
+
+        .keyword { color: #ff7b72; }
+        .string { color: #a5d6ff; }
+        .comment { color: #8b949e; font-style: italic; }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+            font-size: 0.8rem;
+            border-top: 1px solid #333;
+            margin-top: auto;
+        }
+
+        @media (max-width: 600px) {
+            .sticky-nav { overflow-x: auto; justify-content: start; }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 class="font-title" style="color: var(--accent-silver);">Configuração VTT & Painel</h1>
+        <p style="color: #6b7280; font-size: 0.9rem;">Obtenção de Credenciais do Banco de Dados</p>
+    </header>
+
+    <nav class="sticky-nav">
+        <a href="#intro" class="nav-link" style="color: #60a5fa;"><i class="fa-solid fa-circle-info mr-2"></i>Sobre</a>
+        <a href="#step1" class="nav-link">1. Projeto</a>
+        <a href="#step2" class="nav-link">2. Database</a>
+        <a href="#step3" class="nav-link" style="color: #f87171;">3. Regras</a>
+        <a href="#step4" class="nav-link">4. Credenciais</a>
+        <a href="#step5" class="nav-link" style="color: #10b981;">5. Distribuição</a>
+    </nav>
+
+    <main>
+
+        <!-- INTRODUÇÃO: CUSTO E FIREBASE -->
+        <section id="intro" style="border-left-color: #60a5fa;">
+            <h2 style="color: #60a5fa;">Firebase e Custos</h2>
+            <div class="intro-box">
+                <p style="margin-bottom: 0.8rem;">
+                    <strong>Isso é grátis mesmo?</strong> Sim, mano. O Firebase é uma plataforma do Google que oferece um plano gratuito (chamado <em>Spark Plan</em>) com limites extremamente generosos.
+                </p>
+                <ul style="list-style: none; margin-left: 0;">
+                    <li style="margin-bottom: 0.5rem;"><i class="fa-solid fa-check text-green-500 mr-2"></i> <strong>Firestore:</strong> Permite 50.000 leituras e 20.000 gravações <em>por dia</em> gratuitamente. Para uma mesa de RPG, é quase impossível atingir esse limite, a menos que você tenha centenas de jogadores simultâneos.</li>
+                    <li style="margin-bottom: 0.5rem;"><i class="fa-solid fa-server text-blue-500 mr-2"></i> <strong>Infraestrutura Google:</strong> É o mesmo sistema que roda apps gigantes, garantindo que sua ficha não vai sumir do nada.</li>
+                    <li><i class="fa-solid fa-shield text-yellow-500 mr-2"></i> <strong>Cartão de Crédito:</strong> Não é necessário cadastrar cartão para usar o plano gratuito básico.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- PASSO 1 -->
+        <section id="step1">
+            <h2><span class="step-badge">1</span> Criar Projeto</h2>
+            <p>Acesse o <a href="https://console.firebase.google.com/" target="_blank">Console do Firebase</a>.</p>
+            <ol>
+                <li>Clique em <strong>"Adicionar projeto"</strong>.</li>
+                <li>Defina um nome (ex: <code>Mesa-RPG-VTT</code>).</li>
+                <li>Desative o <strong>Google Analytics</strong> (recomendado para simplificar e evitar configurações extras).</li>
+                <li>Conclua a criação.</li>
+            </ol>
+        </section>
+
+        <!-- PASSO 2 -->
+        <section id="step2">
+            <h2><span class="step-badge">2</span> Ativar Firestore</h2>
+            <p>Onde ficam as fichas, posições do mapa e chats.</p>
+            <ol>
+                <li>Menu lateral: <strong>Criação (Build)</strong> &rarr; <strong>Firestore Database</strong>.</li>
+                <li>Clique em <strong>Criar banco de dados</strong>.</li>
+                <li>Local: <code>southamerica-east1</code> (São Paulo) ou <code>us-central1</code> (se quiser o padrão).</li>
+                <li>Inicie em <strong>Modo de Teste</strong>.</li>
+            </ol>
+        </section>
+
+        <!-- PASSO 3 -->
+        <section id="step3" style="border-left-color: #f87171;">
+            <h2 style="color: #f87171;"><span class="step-badge" style="background: #7f1d1d;">3</span> Regras (Firestore)</h2>
+            
+            <div class="alert-box">
+                <i class="fa-solid fa-triangle-exclamation" style="color: #f87171; font-size: 1.5rem;"></i>
+                <div>
+                    <strong style="color: #f87171;">Evite o Bloqueio Automático</strong>
+                    <p style="font-size: 0.9rem; margin-top: 0.3rem;">
+                        O "Modo de Teste" padrão bloqueia o acesso após 30 dias. Para manter o app funcionando, precisamos ajustar isso.
+                    </p>
+                </div>
+            </div>
+
+            <p style="margin-top: 1rem;">Na aba <strong>Rules</strong> (Regras), substitua o código existente por este:</p>
+            <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+<pre><code>rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      <span class="comment">// Acesso público para uso na mesa de RPG</span>
+      <span class="keyword">allow</span> read, write: <span class="keyword">if</span> <span class="keyword">true</span>;
+    }
+  }
+}</code></pre>
+            </div>
+
+            <div class="info-box">
+                <i class="fa-solid fa-lock" style="color: #d97706; font-size: 1.5rem;"></i>
+                <div>
+                    <strong style="color: #d97706;">Observação Importante</strong>
+                    <p style="font-size: 0.9rem; margin-top: 0.3rem;">
+                        Pode ser que as regras estejam <strong>travadas para alteração</strong> (botão "Publicar" inativo) pelos primeiros 30 dias enquanto estiver no Modo de Teste. Se isso ocorrer, não se preocupe: o banco funcionará normalmente durante esse tempo. Após esse período, o painel liberará a edição para que você possa aplicar a regra permanente acima.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PASSO 4 -->
+        <section id="step4">
+            <h2><span class="step-badge">4</span> Obter Credenciais (Mestre)</h2>
+            <p>Pegue os dados para conectar o Painel do Mestre.</p>
+            <ol>
+                <li>Vá em <strong>Configurações do Projeto</strong> (Ícone de Engrenagem <i class="fa-solid fa-gear"></i>).</li>
+                <li>Em "Seus aplicativos", clique no ícone <strong>Web (&lt;/&gt;)</strong>.</li>
+                <li>Registre com o nome "VTT". Não marque "Hosting".</li>
+                <li>Copie os valores do código gerado (apenas o que está entre chaves <code>{...}</code>).</li>
+            </ol>
+            
+            <p style="margin-top: 1rem; color: #9ca3af; font-size: 0.9rem;">
+                <i class="fa-solid fa-arrow-right"></i> Insira esses dados manualmente no <strong>Painel do Mestre (PM)</strong> para habilitar a conexão inicial.
+            </p>
+        </section>
+
+        <!-- PASSO 5 -->
+        <section id="step5" style="border-left-color: #10b981;">
+            <h2 style="color: #10b981;"><span class="step-badge" style="background: #064e3b;">5</span> Distribuir Acesso (Jogadores)</h2>
+            
+            <p>Após conectar o seu Painel do Mestre usando as credenciais acima, você deve gerar uma chave segura para facilitar a vida dos seus jogadores.</p>
+            
+            <div class="success-box">
+                <i class="fa-solid fa-key" style="color: #10b981; font-size: 1.5rem;"></i>
+                <div>
+                    <strong style="color: #10b981;">Gerando a Chave da Mesa</strong>
+                    <ol style="margin-top: 0.5rem; color: #d1d5db; margin-left: 1rem;">
+                        <li>No <strong>Painel do Mestre</strong>, clique no botão de configuração (engrenagem flutuante).</li>
+                        <li>Clique no botão <strong>"Gerar Chave da Mesa (JSON)"</strong>.</li>
+                        <li>Um arquivo <code>.json</code> será baixado no seu computador.</li>
+                        <li><strong>Envie este arquivo para seus jogadores.</strong></li>
+                    </ol>
+                </div>
+            </div>
+
+            <p style="font-size: 0.9rem; color: #9ca3af; margin-top: 1rem;">
+                <i class="fa-solid fa-users"></i> Os jogadores devem usar a opção <strong>"Carregar Chave da Mesa"</strong> na ficha deles (`fp.html`) e selecionar esse arquivo. Assim, eles se conectam automaticamente sem precisar digitar códigos complexos.
+            </p>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>Tutorial Otimizado para Painel do Mestre & VTT</p>
+    </footer>
+
+    <script>
+        function copyCode(btn) {
+            const code = btn.nextElementSibling.innerText;
+            navigator.clipboard.writeText(code);
+            const originalText = btn.innerText;
+            btn.innerText = "Copiado!";
+            setTimeout(() => btn.innerText = originalText, 2000);
+        }
+    </script>
+</body>
+</html>

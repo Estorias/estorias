@@ -1,956 +1,426 @@
 ﻿<!DOCTYPE html>
-<html lang="pt-BR" data-theme="onenari">
+<html lang="pt-BR" data-theme="cineria">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciador de Mapa (MP)</title><link rel="icon" type="image/x-icon" href="img/logo.ico">
-    <!-- Scripts do Firebase (v8, conforme seu arquivo original) -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <title>Painel do Mestre - Campanha</title> <link rel="icon" type="image/x-icon" href="img/logo.ico">
+    <!-- Scripts do Firebase (versão atualizada) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-storage-compat.js"></script>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Cropper.js -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+    <!-- Bibliotecas JS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root, [data-theme='onenari'] {
-            --font-main: 'Cinzel', serif;
-            --color-bg-primary: #0a192f;
-            --color-bg-secondary: #172a46;
-            --color-bg-tertiary: #0f223d;
-            --color-text-primary: #ccd6f6;
-            --color-text-secondary: #8892b0;
-            --color-accent: #64ffda;
-            --color-border: #233554;
-            --color-red: #e64966;
-            --color-green: #64ffda;
-            --color-yellow: #ffca86;
-        }
-        /* Layout de 2 colunas */
-        html, body {
-            height: 100%;
-            overflow: hidden; /* Previne scroll da página inteira */
-        }
-        body {
-            font-family: var(--font-main);
-            background-color: var(--color-bg-primary);
-            color: var(--color-text-primary);
-            display: flex;
-        }
-        #main-layout {
-            display: flex;
-            width: 100%;
-            height: 100%;
-        }
-
-        .bg-primary { background-color: var(--color-bg-primary); }
-        .bg-secondary { background-color: var(--color-bg-secondary); }
-        .bg-tertiary { background-color: var(--color-bg-tertiary); }
-        .text-primary { color: var(--color-text-primary); }
-        .text-secondary { color: var(--color-text-secondary); }
-        .text-accent { color: var(--color-accent); }
-        .border-color { border-color: var(--color-border); }
-        
-        input, textarea {
-            background-color: var(--color-bg-tertiary);
-            color: var(--color-text-primary);
-            border: 1px solid var(--color-border);
-            border-radius: 4px;
-        }
-        input:focus, textarea:focus { outline: none; border-color: var(--color-accent); }
-        
-        .gm-tab-button.active {
-            border-color: var(--color-accent);
-            color: var(--color-accent);
-            background-color: var(--color-bg-secondary);
-        }
-        .gm-tab-button { transition: color 0.2s, border-color 0.2s, background-color 0.2s; }
-        .gm-tab-button:hover { color: var(--color-accent); }
-
-        .btn { padding: 0.5rem 1rem; border-radius: 4px; font-weight: bold; transition: background-color 0.2s; cursor: pointer; }
-        .btn-primary { background-color: var(--color-accent); color: var(--color-bg-primary); }
-        .btn-primary:hover { background-color: #52d9bc; }
-        .btn-secondary { background-color: var(--color-bg-tertiary); color: var(--color-text-primary); border: 1px solid var(--color-border); }
-        .btn-secondary:hover { background-color: var(--color-border); }
-        .btn-danger { background-color: var(--color-red); color: var(--color-bg-primary); }
-        .btn-danger:hover { opacity: 0.9; }
-
-        .modal-overlay { position: fixed; inset: 0; z-index: 110; background-color: rgba(0, 0, 0, 0.7); display: none; align-items: center; justify-content: center; }
-        .modal-container { background-color: var(--color-bg-primary); width: 90%; display: flex; flex-direction: column; border: 2px solid var(--color-border); border-radius: 8px; }
-        
-        /* Painel Lateral (Sempre Aberto) */
-        #gm-panel {
-            width: 384px; /* w-96 */
-            height: 100vh;
-            background-color: var(--color-bg-primary);
-            border-right: 2px solid var(--color-border);
-            z-index: 120;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-        }
-        .gm-panel-header { padding: 1rem; border-bottom: 2px solid var(--color-border); font-size: 1.5rem; color: var(--color-accent); }
-        .gm-panel-content { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .gm-panel-tabs { border-bottom: 2px solid var(--color-border); flex-shrink: 0; }
-        .gm-tab-content { overflow-y: auto; flex-grow: 1; padding: 1rem; }
-        .gm-player-card { background-color: var(--color-bg-secondary); border: 1px solid var(--color-border); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
-        .gm-player-info { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
-        .gm-player-avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
-        .gm-player-name { font-size: 1.2rem; font-weight: bold; }
-        .gm-control-btn { background: var(--color-bg-tertiary); border: 1px solid var(--color-border); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .gm-control-btn:hover { background-color: var(--color-border); }
-        #gm-condition-modal .modal-container { max-width: 500px; max-height: 80vh; }
-        #gm-condition-list { overflow-y: auto; max-height: 60vh; }
-        .custom-checkbox:checked + label { color: var(--color-accent); }
-        #map-viewport { flex-grow: 1; overflow: auto; background-color: var(--color-bg-tertiary); cursor: grab; }
-        #map-container { 
-            position: relative; 
-            width: 1000px; 
-            height: 1000px; 
-            background-size: 100% 100%; 
-            background-repeat: no-repeat;
-            /* Adicionado para o Pan/Zoom */
-            transform-origin: 0 0;
-            transition: transform 0.1s ease-out; /* Suaviza o zoom */
-        }
-        #map-grid { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(to right, var(--color-border) 1px, transparent 1px), linear-gradient(to bottom, var(--color-border) 1px, transparent 1px); background-size: 50px 50px; z-index: 1; }
-        #map-tokens { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; }
-        .player-token { position: absolute; background-size: cover; background-position: center; border-radius: 50%; border: 3px solid var(--color-accent); cursor: grab; box-shadow: 0 0 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; transition: width 0.2s, height 0.2s, box-shadow 0.2s; }
-        .player-token:active { cursor: grabbing; z-index: 10; }
-        .token-label { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); background-color: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; white-space: nowrap; pointer-events: none; }
-        #map-bg-adjust-modal .modal-container { max-width: 80vw; max-height: 90vh; }
-        #map-bg-preview-container { width: 600px; height: 600px; overflow: hidden; position: relative; border: 2px dashed var(--color-border); margin: auto; }
-        #map-bg-preview { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: fill; }
-        #token-context-menu { display: none; position: fixed; z-index: 1000; background-color: var(--color-bg-secondary); border: 1px solid var(--color-border); border-radius: 4px; padding: 0.5rem; }
-        #token-context-menu button { display: block; width: 100%; text-align: left; padding: 0.5rem; font-size: 0.9rem; }
-        #token-context-menu button:hover { background-color: var(--color-bg-tertiary); }
-        #token-context-menu hr { border-top: 1px solid var(--color-border); margin: 0.5rem 0; }
-        input[type="color"] { -webkit-appearance: none; -moz-appearance: none; appearance: none; background-color: transparent; border: none; cursor: pointer; width: 100%; height: 24px;}
-        input[type="color"]::-webkit-color-swatch { border-radius: 4px; border: 1px solid var(--color-border); }
-        input[type="color"]::-moz-color-swatch { border-radius: 4px; border: 1px solid var(--color-border); }
-        .token-hp-bar-container { position: absolute; top: -12px; left: 10%; width: 80%; height: 8px; background-color: rgba(0,0,0,0.7); border: 1px solid #000; border-radius: 4px; overflow: hidden; }
-        .token-hp-bar { height: 100%; width: 100%; background-color: var(--color-red); transition: width 0.3s ease; }
-
-        /* NOVO: CSS para o Ping do Mestre */
-        .map-ping-target {
-            position: absolute;
-            width: 50px; /* Tamanho de 1 grid */
-            height: 50px;
-            border-radius: 50%;
-            border: 3px solid var(--color-accent);
-            background-color: rgba(100, 255, 218, 0.2);
-            box-shadow: 0 0 15px var(--color-accent), 0 0 20px var(--color-accent) inset;
-            transform: translate(-50%, -50%); /* Centraliza no clique */
-            z-index: 999;
-            pointer-events: none; /* Permite clicar através dele */
-            animation: ping-animation 8s ease-out forwards;
-        }
-        .map-ping-target::before, .map-ping-target::after {
-            content: '';
-            position: absolute;
-            background-color: var(--color-accent);
-        }
-        .map-ping-target::before { /* Linha vertical */
-            width: 3px;
-            height: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        .map-ping-target::after { /* Linha horizontal */
-            width: 100%;
-            height: 3px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-        @keyframes ping-animation {
-            0% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-            10% { transform: translate(-50%, -50%) scale(1); }
-            80% { opacity: 1; }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-        }
-
-        /* Mensagem de Login */
-        #firebase-login-prompt {
-            display: none; /* Oculto por padrão */
-            width: 100%;
-            height: 100%;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-    </style>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <!-- Fontes -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="pm/style.css">
 </head>
-<body>
-
-    <!-- Layout Principal (Visível após login) -->
-    <div id="main-layout">
-        <!-- Painel Lateral Fixo -->
-        <div id="gm-panel">
-            <div class="gm-panel-header">
-                <span>Ferramentas do Mestre</span>
+<body class="p-4 sm:p-6 md:p-8">
+    <div class="max-w-screen-2xl mx-auto">
+        <header class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-4xl font-bold font-condensed" style="color: var(--color-accent);">Painel de Controle da Campanha</h1>
+                <p style="color: var(--color-text-secondary);">Gerencie NPCs, Bestiário, Eventos e mais.</p>
             </div>
-            <div class="gm-panel-content">
-                <div class="gm-panel-tabs">
-                    <nav class="-mb-px flex space-x-2" aria-label="GM Tabs">
-                        <button onclick="switchGmTab(event, 'gm-players-tab')" class="gm-tab-button active whitespace-nowrap py-2 px-3 border-b-2 border-transparent font-medium text-sm text-secondary">Jogadores</button>
-                        <button onclick="switchGmTab(event, 'gm-map-tab')" class="gm-tab-button whitespace-nowrap py-2 px-3 border-b-2 border-transparent font-medium text-sm text-secondary">Mapa</button>
+            <div class="flex-shrink-0 flex items-center gap-2">
+                 <select id="theme-selector" class="btn btn-secondary" title="Mudar Tema"></select>
+                 <button onclick="saveAllToJson()" class="btn btn-primary">Gravar Campanha</button>
+                 <button onclick="document.getElementById('load-json-input').click()" class="btn btn-secondary">Carregar Fichas (JSON)</button>
+                 <input type="file" id="load-json-input" class="hidden" accept=".json" onchange="loadAllFromJson(event)">
+            </div>
+        </header>
+
+        <nav class="border-b mb-6" style="border-color: var(--color-border);">
+            <div class="-mb-px flex space-x-4" aria-label="Abas">
+                <button onclick="switchTab(event, 'npcs')" class="main-tab-button active text-lg font-condensed py-3 px-5 border-b-4 border-transparent">NPCs</button>
+                <button onclick="switchTab(event, 'bestiario')" class="main-tab-button text-lg font-condensed py-3 px-5 border-b-4 border-transparent">Bestiário</button>
+                <button onclick="switchTab(event, 'eventos')" class="main-tab-button text-lg font-condensed py-3 px-5 border-b-4 border-transparent">Eventos</button>
+                <button onclick="switchTab(event, 'anotacoes')" class="main-tab-button text-lg font-condensed py-3 px-5 border-b-4 border-transparent">Anotações</button>
+                <button onclick="switchTab(event, 'galeria')" class="main-tab-button text-lg font-condensed py-3 px-5 border-b-4 border-transparent">Galeria</button>
+            </div>
+        </nav>
+
+        <main>
+            <!-- Conteúdo das Abas -->
+            <div id="npcs" class="main-tab-content active"></div>
+            <div id="bestiario" class="main-tab-content"></div>
+            <div id="eventos" class="main-tab-content"></div>
+            <div id="anotacoes" class="main-tab-content"></div>
+            <div id="galeria" class="main-tab-content">
+                 <div class="border-b flex items-center justify-between p-2" style="border-color: var(--color-border);">
+                    <nav class="flex space-x-2">
+                        <button onclick="switchGalleryTab(event, 'gallery-main-content')" class="gallery-tab-button active">Galeria</button>
+                        <button onclick="switchGalleryTab(event, 'stickers-main-content')" class="gallery-tab-button">Figurinhas</button>
                     </nav>
                 </div>
-                <div id="gm-players-tab" class="gm-tab-content active">
-                    <h3 class="text-lg font-bold text-primary mb-4">Jogadores Online</h3>
-                    <div id="gm-player-list">
-                        <p class="text-secondary animate-pulse">Carregando...</p>
-                    </div>
-                </div>
-                <div id="gm-map-tab" class="gm-tab-content">
-                    <h3 class="text-lg font-bold text-primary mb-4">Controles do Mapa</h3>
-                    <div class="space-y-4">
-                        <!-- Botão de Abrir/Fechar foi removido, pois o mapa está sempre visível -->
-                        <button id="add-token-btn" class="btn btn-secondary w-full py-2">Adicionar Token Genérico</button>
-                        <button id="change-bg-btn" class="btn btn-secondary w-full py-2">Alterar Fundo do Mapa</button>
-                        <button id="new-map-btn" class="btn btn-danger w-full py-2 mt-8">Novo Mapa em Branco</button>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Área do Mapa (Visível por padrão) -->
-        <div id="map-main-area">
-            <div id="map-toolbar">
-                <span class="text-xl text-accent font-bold">Mapa da Sessão</span>
-                <input type="file" id="map-bg-upload" class="hidden" accept="image/*">
-                <!-- Botão de Fechar foi removido -->
-            </div>
-            <div id="map-viewport">
-                <div id="map-container">
-                    <div id="map-grid"></div>
-                    <div id="map-tokens"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Mensagem de "Faça Login" (Oculta por padrão) -->
-    <div id="firebase-login-prompt">
-        <h1 class="text-3xl font-bold text-accent mb-4">Mapa Desconectado</h1>
-        <p class="text-secondary text-lg max-w-md">
-            Faça login em uma sessão pela Ficha do Player (`fp.html`) ou pelo Painel do Mestre (`tc.html`) em outra aba para ativar este mapa.
-        </p>
-    </div>
-
-
-    <!-- Modals (Copied from original, no changes) -->
-    <div id="gm-condition-modal" class="modal-overlay">
-        <div class="modal-container bg-secondary p-4 rounded-lg shadow-lg">
-            <h3 id="gm-condition-modal-title" class="font-bold text-xl text-accent mb-4">Atribuir Condições</h3>
-            <div id="gm-condition-list" class="space-y-2 p-2"></div>
-            <div class="flex justify-end gap-4 mt-4">
-                <button id="gm-condition-cancel" class="btn btn-secondary">Cancelar</button>
-                <button id="gm-condition-save" class="btn btn-primary">Salvar</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- (Restante dos modals: map-bg-source, map-bg-adjust, generic-token, token-image-adjust, token-context-menu) -->
-    <!-- ... (O HTML dos outros modals permanece o mesmo aqui) ... -->
-    <div id="map-bg-source-modal" class="modal-overlay">
-         <div class="modal-container bg-secondary p-6 rounded-lg shadow-lg max-w-sm text-center">
-            <h3 class="text-2xl text-accent mb-4">Escolher Fundo do Mapa</h3>
-            <p class="text-secondary mb-6">De onde você quer carregar a imagem?</p>
-            <div class="flex justify-center gap-4 mt-4">
-                <button id="map-bg-from-computer" class="btn btn-primary py-2 px-6">Computador</button>
-            </div>
-        </div>
-    </div>
-    <div id="map-bg-adjust-modal" class="modal-overlay">
-        <div class="modal-container bg-secondary p-4 rounded-lg shadow-lg">
-            <h3 class="text-xl text-accent mb-4">Ajustar Fundo e Tamanho do Mapa</h3>
-            <div class="flex items-center justify-center gap-4 mb-4">
-                <div>
-                    <label for="map-width-input" class="text-sm text-secondary">Largura (px)</label>
-                    <input type="number" id="map-width-input" value="1000" class="w-24 text-center rounded-md p-1">
-                </div>
-                 <div>
-                    <label for="map-height-input" class="text-sm text-secondary">Altura (px)</label>
-                    <input type="number" id="map-height-input" value="1000" class="w-24 text-center rounded-md p-1">
-                </div>
-            </div>
-            <div id="map-bg-preview-container">
-                <img id="map-bg-preview" src="">
-            </div>
-             <div class="flex justify-end gap-4 mt-4">
-                <button id="map-bg-cancel" class="btn btn-secondary">Cancelar</button>
-                <button id="map-bg-confirm" class="btn btn-primary">Confirmar</button>
-            </div>
-        </div>
-    </div>
-    <div id="generic-token-modal" class="modal-overlay">
-        <div class="modal-container bg-secondary p-6 rounded-lg shadow-lg max-w-md">
-            <h3 class="text-2xl text-accent mb-4">Criar Token Genérico</h3>
-            <div class="space-y-4">
-                <div>
-                    <label for="token-name-input" class="text-sm text-secondary">Nome do Token</label>
-                    <input type="text" id="token-name-input" class="w-full p-2 rounded-md">
-                </div>
-                <div>
-                    <label class="text-sm text-secondary">Imagem do Token</label>
-                    <input type="file" id="token-image-upload" class="hidden" accept="image/*">
-                    <button onclick="document.getElementById('token-image-upload').click()" class="btn btn-secondary w-full">Carregar Imagem</button>
-                    <img id="token-image-preview" src="" class="hidden w-24 h-24 mx-auto mt-2 rounded-full object-cover border-2 border-color">
-                </div>
-                <div class="flex gap-4">
-                    <div class="flex-1">
-                        <label for="token-current-hp-input" class="text-sm text-secondary">Vida Atual</label>
-                        <input type="number" id="token-current-hp-input" value="10" class="w-full p-2 text-center rounded-md">
-                    </div>
-                    <div class="flex-1">
-                        <label for="token-max-hp-input" class="text-sm text-secondary">Vida Máxima</label>
-                        <input type="number" id="token-max-hp-input" value="10" class="w-full p-2 text-center rounded-md">
-                    </div>
-                </div>
-            </div>
-            <div class="flex justify-end gap-4 mt-6">
-                <button id="generic-token-cancel" class="btn btn-secondary">Cancelar</button>
-                <button id="generic-token-confirm" class="btn btn-primary">Criar Token</button>
-            </div>
-        </div>
-    </div>
-    <div id="token-image-adjust-modal" class="modal-overlay">
-        <div class="modal-container bg-secondary p-4 rounded-lg shadow-lg max-w-lg">
-            <h3 class="text-xl text-accent mb-4">Ajustar Imagem do Token</h3>
-            <div class="w-full h-64 md:h-96">
-                <img id="token-cropper-image" src="">
-            </div>
-            <div class="flex justify-end gap-4 mt-4">
-                <button id="token-image-cancel" class="btn btn-secondary">Cancelar</button>
-                <button id="token-image-confirm" class="btn btn-primary">Confirmar</button>
-            </div>
-        </div>
-    </div>
-    <div id="token-context-menu">
-        <button id="increase-token-size-btn">Aumentar Tamanho (+)</button>
-        <button id="decrease-token-size-btn">Diminuir Tamanho (-)</button>
-        <hr>
-        <div class="flex items-center justify-between p-1">
-            <label for="token-color-input" class="text-sm text-secondary">Cor da Borda</label>
-            <input type="color" id="token-color-input">
-        </div>
-        <hr id="token-hp-separator" class="hidden">
-        <div id="token-hp-editor" class="hidden p-1 space-y-2">
-            <label class="text-sm text-secondary">Vida do Token</label>
-            <div class="flex items-center gap-2">
-                <input type="number" id="token-context-current-hp" class="w-16 p-1 text-center rounded">
-                <span>/</span>
-                <input type="number" id="token-context-max-hp" class="w-16 p-1 text-center rounded">
-            </div>
-            <button id="token-context-save-hp" class="btn btn-primary w-full text-sm py-1">Salvar Vida</button>
-        </div>
-        <hr>
-        <button id="remove-token-btn" class="text-red-400">Remover Token</button>
-    </div>
-    
-    <script>
-        // --- INICIALIZAÇÃO DO FIREBASE (REMOVIDO CONFIG FIXO) ---
-        let db;
-        let playersCollection;
-        let mapsCollectionRef;
-        let mapDocRef;
-
-        // --- DATA ---
-        const allConditions = {
-            'protegido': { name: 'Protegido (x)', type: 'bonus' }, 'vantagem': { name: 'Vantagem', type: 'bonus' }, 'inspirado': { name: 'Inspirado', type: 'bonus' }, 'focado': { name: 'Focado', type: 'bonus' }, 'fortalecido': { name: 'Fortalecido', type: 'bonus' }, 'impetuoso': { name: 'Impetuoso', type: 'bonus' }, 'agilizado': { name: 'Agilizado', type: 'bonus' }, 'preparado': { name: 'Preparado', type: 'bonus' }, 'revitalizado': { name: 'Revitalizado', type: 'bonus' }, 'motivado': { name: 'Motivado', type: 'bonus' }, 'destemido': { name: 'Destemido', type: 'bonus' }, 'vulneravel': { name: 'Vulnerável (x)', type: 'onus' }, 'desmotivado': { name: 'Desmotivado', type: 'onus' }, 'enfraquecido': { name: 'Enfraquecido', type: 'onus' }, 'lento': { name: 'Lento', type: 'onus' }, 'desvantagem': { name: 'Desvantagem', type: 'onus' }, 'em-apuros': { name: 'Em apuros', type: 'onus' }, 'preso': { name: 'Preso', type: 'onus' }, 'cansado': { name: 'Cansado', type: 'onus' }, 'desorientado': { name: 'Desorientado', type: 'onus' }, 'assustado': { name: 'Assustado', type: 'onus' }, 'ferido': { name: 'Ferido', type: 'onus' }, 'baixa-visibilidade': { name: 'Baixa Visibilidade', type: 'onus' },
-        };
-        
-        // --- GLOBAL STATE ---
-        let unsubscribeMapListener = null;
-        let draggedToken = null;
-        let highestZIndex = 151;
-        let cropper = null;
-        let processedTokenImageData = null;
-
-        // --- NOVOS: Global State para Pan & Zoom ---
-        let mapScale = 1;
-        let mapTranslateX = 0;
-        let mapTranslateY = 0;
-        let isPanning = false;
-        let lastPanX = 0;
-        let lastPanY = 0;
-
-
-        // --- NOVA LÓGICA DE LOGIN ---
-        function checkFirebaseConfig() {
-            // Checa o mesmo item salvo pelo fp.html e tc.html
-            const savedConfig = localStorage.getItem('rpg_firebase_config');
-            
-            if (savedConfig) {
-                try {
-                    const config = JSON.parse(savedConfig);
-                    initializeFirebase(config);
-                    // Esconde a mensagem de login e mostra o app
-                    document.getElementById('main-layout').style.display = 'flex';
-                    document.getElementById('firebase-login-prompt').style.display = 'none';
-                } catch (e) {
-                    console.error("Configuração salva inválida", e);
-                    showLoginPrompt();
-                }
-            } else {
-                // Se não tem config salva, mostra a mensagem
-                showLoginPrompt();
-            }
-        }
-
-        function initializeFirebase(config) {
-            try {
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(config);
-                }
-            } catch(e) { console.error("Erro ao inicializar o Firebase: ", e); }
-            
-            db = firebase.firestore();
-            playersCollection = db.collection('players');
-            mapsCollectionRef = db.collection('maps');
-            mapDocRef = db.collection('maps').doc('main_map');
-
-            console.log("MP Conectado via Storage!");
-
-            // Ativa os listeners DEPOIS de conectar
-            listenForMapChanges();
-            listenForOnlinePlayers();
-        }
-
-        function showLoginPrompt() {
-            // Esconde o app e mostra a mensagem de login
-            document.getElementById('main-layout').style.display = 'none';
-            document.getElementById('firebase-login-prompt').style.display = 'flex';
-        }
-
-        // --- NOVAS: Funções de Pan & Zoom ---
-        function updateMapTransform() {
-            const mapContainer = document.getElementById('map-container');
-            if(mapContainer) {
-                mapContainer.style.transform = `translate(${mapTranslateX}px, ${mapTranslateY}px) scale(${mapScale})`;
-            }
-        }
-
-        function handleMapZoom(e) {
-            e.preventDefault(); // Impede o scroll da página
-            
-            const viewport = document.getElementById('map-viewport');
-            const rect = viewport.getBoundingClientRect();
-            
-            // Posição do mouse relativa ao viewport
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-
-            // Posição do mouse no mapa (antes do zoom)
-            const mapMouseX = (mouseX - mapTranslateX) / mapScale;
-            const mapMouseY = (mouseY - mapTranslateY) / mapScale;
-
-            // Calcula novo scale
-            const zoomDirection = e.deltaY > 0 ? -1 : 1; // -1 = zoom out, 1 = zoom in
-            const zoomAmount = 0.1;
-            const newScale = Math.min(Math.max(mapScale + zoomDirection * zoomAmount, 0.3), 5); // Limita o zoom (30% a 500%)
-
-            // Ajusta o translate para que o zoom seja centrado no mouse
-            mapTranslateX = mouseX - mapMouseX * newScale;
-            mapTranslateY = mouseY - mapMouseY * newScale;
-            mapScale = newScale;
-
-            updateMapTransform();
-        }
-
-        function handlePanStart(e) {
-            // Só ativa o pan se:
-            // 1. Não estiver clicando em um token (deixa o drag do token funcionar)
-            // 2. For o botão esquerdo (botão 0)
-            if (e.target.closest('.player-token') || e.button !== 0) return;
-
-            e.preventDefault();
-            isPanning = true;
-            lastPanX = e.clientX;
-            lastPanY = e.clientY;
-            const viewport = document.getElementById('map-viewport');
-            viewport.style.cursor = 'grabbing'; // Muda o cursor
-        }
-
-        function handlePanMove(e) {
-            if (!isPanning) return;
-            e.preventDefault();
-
-            const dx = e.clientX - lastPanX;
-            const dy = e.clientY - lastPanY;
-
-            mapTranslateX += dx;
-            mapTranslateY += dy;
-
-            lastPanX = e.clientX;
-            lastPanY = e.clientY;
-
-            updateMapTransform();
-        }
-
-        function handlePanEnd(e) {
-            if (isPanning) {
-                isPanning = false;
-                const viewport = document.getElementById('map-viewport');
-                viewport.style.cursor = 'grab'; // Volta o cursor
-            }
-        }
-
-        // --- NOVA: Função de Ping (Alvo) ---
-        function handleMapPing(e) {
-            // Ignora se for double-click em um token
-            if (e.target.closest('.player-token')) return;
-            e.preventDefault();
-
-            const viewport = document.getElementById('map-viewport');
-            const rect = viewport.getBoundingClientRect();
-
-            // Posição do clique relativa ao viewport
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-
-            // Posição do clique relativa ao mapa (considerando pan e zoom)
-            const pingX = (mouseX + viewport.scrollLeft - mapTranslateX) / mapScale;
-            const pingY = (mouseY + viewport.scrollTop - mapTranslateY) / mapScale;
-
-            // Cria o elemento visual do ping
-            const pingEl = document.createElement('div');
-            pingEl.className = 'map-ping-target';
-            pingEl.style.left = `${pingX}px`;
-            pingEl.style.top = `${pingY}px`;
-
-            // Adiciona ao container de tokens (para ficar em cima do grid)
-            document.getElementById('map-tokens').appendChild(pingEl);
-
-            // Remove após 8 segundos
-            setTimeout(() => {
-                pingEl.remove();
-            }, 8000);
-        }
-
-
-        // --- Funções (sem alteração) ---
-        function bringToFront(element) {
-            highestZIndex++;
-            element.style.zIndex = highestZIndex;
-        }
-
-        async function createNewMap() {
-            if (confirm("Tem certeza que deseja apagar TODOS os mapas e dados de mapa? Esta ação é irreversível e afetará todos os usuários.")) {
-                try {
-                    const querySnapshot = await mapsCollectionRef.get();
-                    if (!querySnapshot.empty) {
-                        const batch = db.batch();
-                        querySnapshot.forEach(doc => batch.delete(doc.ref));
-                        await batch.commit();
-                    }
-                    await mapDocRef.set({ width: 1000, height: 1000, background: { src: '', x: 0, y: 0 }, tokens: {}, active: true });
-                } catch (error) { console.error("Erro ao criar novo mapa:", error); }
-            }
-        }
-
-        function openMapBgSourceModal() { document.getElementById('map-bg-source-modal').style.display = 'flex'; bringToFront(document.getElementById('map-bg-source-modal')); }
-        function closeMapBgSourceModal() { document.getElementById('map-bg-source-modal').style.display = 'none'; }
-        function openMapBgAdjustModal(imageSrc) { document.getElementById('map-bg-preview').src = imageSrc; document.getElementById('map-bg-adjust-modal').style.display = 'flex'; bringToFront(document.getElementById('map-bg-adjust-modal')); }
-        
-        function handleMapBackgroundUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => openMapBgAdjustModal(e.target.result);
-                reader.readAsDataURL(file);
-            }
-            event.target.value = '';
-        }
-
-        function confirmMapBg() {
-            mapDocRef.update({ 'background.src': document.getElementById('map-bg-preview').src, 'width': parseInt(document.getElementById('map-width-input').value), 'height': parseInt(document.getElementById('map-height-input').value) });
-            document.getElementById('map-bg-adjust-modal').style.display = 'none';
-        }
-
-        function cancelMapBg() { document.getElementById('map-bg-adjust-modal').style.display = 'none'; }
-        
-        // --- TOKEN FUNCTIONS ---
-        function openGenericTokenModal() {
-            document.getElementById('token-name-input').value = 'Novo Token';
-            document.getElementById('token-current-hp-input').value = 10;
-            document.getElementById('token-max-hp-input').value = 10;
-            document.getElementById('token-image-preview').src = '';
-            document.getElementById('token-image-preview').classList.add('hidden');
-            processedTokenImageData = null;
-            const modal = document.getElementById('generic-token-modal');
-            modal.style.display = 'flex';
-            bringToFront(modal);
-        }
-        
-        function handleTokenImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = e => {
-                const image = document.getElementById('token-cropper-image');
-                image.src = e.target.result;
-                const modal = document.getElementById('token-image-adjust-modal');
-                modal.style.display = 'flex';
-                bringToFront(modal);
-                
-                if (cropper) cropper.destroy();
-                cropper = new Cropper(image, { aspectRatio: 1, viewMode: 1, });
-            };
-            reader.readAsDataURL(file);
-            event.target.value = '';
-        }
-        
-        function confirmTokenImageCrop() {
-            if (!cropper) return;
-            const canvas = cropper.getCroppedCanvas({ width: 150, height: 150 });
-            processedTokenImageData = canvas.toDataURL('image/jpeg', 0.7); // Compressão para economizar espaço
-            
-            const preview = document.getElementById('token-image-preview');
-            preview.src = processedTokenImageData;
-            preview.classList.remove('hidden');
-            
-            closeTokenImageAdjustModal();
-        }
-        
-        function closeTokenImageAdjustModal() {
-            if (cropper) cropper.destroy();
-            cropper = null;
-            document.getElementById('token-image-adjust-modal').style.display = 'none';
-        }
-        
-        async function createGenericToken() {
-            const tokenId = `token_${Date.now()}`;
-            const tokenData = {
-                name: document.getElementById('token-name-input').value || 'Token',
-                avatar: processedTokenImageData || 'https://placehold.co/150x150/cccccc/333333?text=?',
-                x: 0, y: 0, size: 1, color: '#64ffda',
-                currentHp: parseInt(document.getElementById('token-current-hp-input').value) || 10,
-                maxHp: parseInt(document.getElementById('token-max-hp-input').value) || 10,
-            };
-            try {
-                await mapDocRef.update({ [`tokens.${tokenId}`]: tokenData });
-                document.getElementById('generic-token-modal').style.display = 'none';
-            } catch (error) { console.error("Erro ao adicionar token:", error); }
-        }
-
-        function addPlayerTokenToMap(playerName, playerAvatar) {
-            const tokenId = playerName;
-            const tokenData = { name: playerName, avatar: playerAvatar, x: 0, y: 0, size: 1, color: '#64ffda' };
-            mapDocRef.update({ [`tokens.${tokenId}`]: tokenData });
-        }
-        
-        async function updateToken(tokenId, dataToUpdate) {
-            const updates = {};
-            for (const key in dataToUpdate) { updates[`tokens.${tokenId}.${key}`] = dataToUpdate[key]; }
-            try { await mapDocRef.update(updates); } catch (e) { console.error("Erro ao atualizar token:", e); }
-        }
-
-        async function removeToken(tokenId) {
-            try { await mapDocRef.update({ [`tokens.${tokenId}`]: firebase.firestore.FieldValue.delete() }); } 
-            catch (e) { console.error("Erro ao remover o token:", e); }
-        }
-
-        function openTokenContextMenu(event, tokenEl, tokenData) {
-            event.preventDefault();
-            const menu = document.getElementById('token-context-menu');
-            bringToFront(menu);
-            menu.style.display = 'block';
-            menu.style.left = `${event.clientX}px`;
-            menu.style.top = `${event.clientY}px`;
-            const tokenId = tokenEl.dataset.name;
-
-            document.getElementById('increase-token-size-btn').onclick = () => updateToken(tokenId, { size: (tokenData.size || 1) + 1 });
-            document.getElementById('decrease-token-size-btn').onclick = () => updateToken(tokenId, { size: Math.max(1, (tokenData.size || 1) - 1) });
-            const colorInput = document.getElementById('token-color-input');
-            colorInput.value = tokenData.color || '#64ffda';
-            colorInput.onchange = () => updateToken(tokenId, { color: colorInput.value });
-            
-            const hpEditor = document.getElementById('token-hp-editor');
-            const hpSeparator = document.getElementById('token-hp-separator');
-            if (tokenData.maxHp) {
-                hpEditor.classList.remove('hidden');
-                hpSeparator.classList.remove('hidden');
-                const currentHpInput = document.getElementById('token-context-current-hp');
-                const maxHpInput = document.getElementById('token-context-max-hp');
-                currentHpInput.value = tokenData.currentHp;
-                maxHpInput.value = tokenData.maxHp;
-                document.getElementById('token-context-save-hp').onclick = () => {
-                    updateToken(tokenId, { currentHp: parseInt(currentHpInput.value), maxHp: parseInt(maxHpInput.value) });
-                    menu.style.display = 'none';
-                };
-            } else {
-                hpEditor.classList.add('hidden');
-                hpSeparator.classList.add('hidden');
-            }
-
-            document.getElementById('remove-token-btn').onclick = () => {
-                if(confirm(`Remover o token de ${tokenData.name}?`)) removeToken(tokenId);
-                menu.style.display = 'none';
-            };
-            const clickOutsideHandler = (e) => {
-                if (!menu.contains(e.target)) {
-                    menu.style.display = 'none';
-                    document.removeEventListener('click', clickOutsideHandler);
-                }
-            };
-            setTimeout(() => document.addEventListener('click', clickOutsideHandler), 0);
-        }
-
-        function listenForMapChanges() {
-            if (unsubscribeMapListener) unsubscribeMapListener();
-            unsubscribeMapListener = mapDocRef.onSnapshot(doc => {
-                const mapContainer = document.getElementById('map-container');
-                const tokensContainer = document.getElementById('map-tokens');
-                if (!doc.exists) {
-                     mapContainer.style.backgroundImage = 'none';
-                     mapContainer.style.width = `1000px`;
-                     mapContainer.style.height = `1000px`;
-                     tokensContainer.innerHTML = '';
-                     return;
-                }
-
-                const mapData = doc.data();
-                const mapWidth = mapData.width || 1000;
-                const mapHeight = mapData.height || 1000;
-                const gridSize = 50;
-                mapContainer.style.width = `${mapWidth}px`;
-                mapContainer.style.height = `${mapHeight}px`;
-                mapContainer.style.backgroundImage = (mapData.background && mapData.background.src) ? `url('${mapData.background.src}')` : 'none';
-
-                // RE-APLICA o transform de pan/zoom caso o mapa seja redesenhado
-                updateMapTransform();
-
-                tokensContainer.innerHTML = '';
-                const tokens = mapData.tokens || {};
-                for (const tokenId in tokens) {
-                    const tokenData = tokens[tokenId];
-                    const tokenEl = document.createElement('div');
-                    const tokenSizeInUnits = tokenData.size || 1;
-                    const tokenPixelSize = tokenSizeInUnits * gridSize;
-                    tokenEl.className = 'player-token';
-                    tokenEl.style.left = `${tokenData.x}px`;
-                    tokenEl.style.top = `${tokenData.y}px`;
-                    tokenEl.style.width = `${tokenPixelSize}px`;
-                    tokenEl.style.height = `${tokenPixelSize}px`;
-                    tokenEl.style.backgroundImage = `url('${tokenData.avatar || 'https://placehold.co/50x50/0f223d/ccd6f6?text=?'
-                    }')`;
-                    tokenEl.style.borderColor = tokenData.color || 'var(--color-accent)';
-                    tokenEl.dataset.name = tokenId;
-                    
-                    if(tokenData.maxHp) {
-                        const hpBarContainer = document.createElement('div');
-                        hpBarContainer.className = 'token-hp-bar-container';
-                        const hpBar = document.createElement('div');
-                        hpBar.className = 'token-hp-bar';
-                        const percentage = tokenData.maxHp > 0 ? (tokenData.currentHp / tokenData.maxHp) * 100 : 0;
-                        hpBar.style.width = `${percentage}%`;
-                        hpBar.style.backgroundColor = percentage > 50 ? 'var(--color-green)' : percentage > 25 ? 'var(--color-yellow)' : 'var(--color-red)';
-                        hpBarContainer.appendChild(hpBar);
-                        tokenEl.appendChild(hpBarContainer);
-                    }
-
-                    const label = document.createElement('div');
-                    label.className = 'token-label';
-                    label.textContent = tokenData.name || tokenId;
-                    tokenEl.appendChild(label);
-                    tokensContainer.appendChild(tokenEl);
-
-                    makeTokenDraggable(tokenEl, mapWidth, mapHeight, tokenPixelSize);
-                    tokenEl.addEventListener('contextmenu', (e) => openTokenContextMenu(e, tokenEl, tokenData));
-                }
-            });
-        }
-        
-        function makeTokenDraggable(tokenEl, mapWidth, mapHeight, tokenPixelSize) {
-            let offsetX, offsetY;
-            const gridSize = 50;
-            const move = (e) => {
-                e.preventDefault();
-                if (!draggedToken) return;
-                const viewport = document.getElementById('map-viewport');
-                const rect = viewport.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                let x = clientX - rect.left + viewport.scrollLeft - offsetX;
-                let y = clientY - rect.top + viewport.scrollTop - offsetY;
-                x = Math.max(0, Math.min(mapWidth - tokenPixelSize, x));
-                y = Math.max(0, Math.min(mapHeight - tokenPixelSize, y));
-                draggedToken.style.left = `${x}px`;
-                draggedToken.style.top = `${y}px`;
-            };
-            const startDrag = (e) => {
-                e.preventDefault();
-                if (e.button === 2) return;
-                draggedToken = tokenEl;
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                const rect = draggedToken.getBoundingClientRect();
-                offsetX = clientX - rect.left;
-                offsetY = clientY - rect.top;
-                window.addEventListener('mousemove', move);
-                window.addEventListener('touchmove', move);
-                window.addEventListener('mouseup', endDrag);
-                window.addEventListener('touchend', endDrag);
-            };
-            const endDrag = () => {
-                if (!draggedToken) return;
-                let x = Math.round(draggedToken.offsetLeft / gridSize) * gridSize;
-                let y = Math.round(draggedToken.offsetTop / gridSize) * gridSize;
-                x = Math.max(0, Math.min(mapWidth - tokenPixelSize, x));
-                y = Math.max(0, Math.min(mapHeight - tokenPixelSize, y));
-                draggedToken.style.left = `${x}px`;
-                draggedToken.style.top = `${y}px`;
-                updateToken(draggedToken.dataset.name, { x, y });
-                draggedToken = null;
-                window.removeEventListener('mousemove', move);
-                window.removeEventListener('touchmove', move);
-                window.removeEventListener('mouseup', endDrag);
-                window.removeEventListener('touchend', endDrag);
-            };
-            tokenEl.addEventListener('mousedown', startDrag);
-            tokenEl.addEventListener('touchstart', startDrag);
-        }
-
-        // --- GM PANEL FUNCTIONS ---
-        function switchGmTab(event, tabName) {
-            document.querySelectorAll('.gm-tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.gm-tab-button').forEach(b => b.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-            event.currentTarget.classList.add('active');
-        }
-        function listenForOnlinePlayers() {
-            const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-            
-            // Querying players 'last_seen' in the last 5 minutes
-            playersCollection.where('last_seen', '>', firebase.firestore.Timestamp.fromDate(fiveMinutesAgo))
-                .onSnapshot(snapshot => {
-                    const playerListEl = document.getElementById('gm-player-list');
-                    playerListEl.innerHTML = snapshot.empty ? '<p class="text-secondary">Nenhum jogador online.</p>' : '';
-                    
-                    snapshot.forEach(doc => {
-                        const player = doc.data();
-                        const playerCard = document.createElement('div');
-                        playerCard.className = 'gm-player-card';
-
-                        // Vigor logic
-                        const currentVigor = parseInt(player.vitals?.vigor || 0);
-                        const fort = parseInt(player.attributes?.fortitude || 0);
-                        const maxVigor = 6 + fort;
-                        const percentage = maxVigor > 0 ? Math.max(0, Math.min(100, (currentVigor / maxVigor) * 100)) : 0;
-                        let barColor = percentage > 50 ? 'var(--color-green)' : percentage > 25 ? 'var(--color-yellow)' : 'var(--color-red)';
-                        
-                        // --- LÓGICA DE AVATAR MODIFICADA ---
-                        // avatarFicha: Usado no painel. É a imagem da ficha (grande) ou placeholder.
-                        const avatarFicha = player.image || 'https://placehold.co/50x50/0f223d/ccd6f6?text=?';
-                        // avatarToken: Usado no MAPA. É a imagem de combate (pequena/token) ou placeholder.
-                        // NÃO usamos player.image (avatarFicha) como fallback aqui, 
-                        // pois pode ser um DataURL muito grande e quebrar o mapa.
-                        const avatarToken = player.combatImage || 'https://placehold.co/50x50/0f223d/ccd6f6?text=?';
-
-
-                        playerCard.innerHTML = `
-                            <div class="gm-player-info">
-                                <img src="${avatarFicha}" class="gm-player-avatar" alt="Avatar"> <!-- Painel usa a imagem da ficha -->
-                                <span class="gm-player-name flex-grow">${player.charName}</span>
-                                <div class="flex items-center gap-2">
-                                    <!-- Botão usa o avatarToken (só o combatImage ou placeholder) -->
-                                    <button class="gm-control-btn" onclick="addPlayerTokenToMap('${player.charName}', '${avatarToken}')" title="Adicionar ao Mapa">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/></svg>
-                                    </button>
-                                    <button class="gm-control-btn" onclick="openConditionModal('${player.charName}')" title="Atribuir Condições">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0M4.402 4.145c.223.384.467.802.73 1.252.264.45.546.92.841 1.407l.076.125c.31.51.638.99.98 1.442l.01.014c.324.428.628.81.89 1.133l.09.108c.181.22.327.403.438.545.11-.142.257-.325.438-.545l.09-.108c.262-.323.566-.705.89-1.133l.01-.014c.342-.452.67-.932.98-1.442l.076-.125c.295-.488.577-1.002.842-1.407.263-.45.506-.868.73-1.252a6.51 6.51 0 0 1-1.23 1.062c-.432.32-.88.552-1.296.696l-.06.02a4.6 4.6 0 0 1-1.103.224c-.383.032-.753.02-1.098-.034a4.5 4.5 0 0 1-1.04-.328l-.068-.027c-.45-.188-.882-.48-1.266-.876a6.52 6.52 0 0 1-1.23-1.062h.01zm-3.195 9.71c.432-.32.88-.552 1.296-.696l.06-.02a4.6 4.6 0 0 1 1.103-.224c.383-.032.753-.02 1.098.034.345.054.706.154 1.04.328l.068.027c.45.188.882.48 1.266.876.385.395.71.848.985 1.353a6.51 6.51 0 0 1-1.23-1.062c-.432-.32-.88-.552-1.296-.696l-.06-.02a4.6 4.6 0 0 1-1.103-.224c-.383-.032-.753-.02-1.098-.034a4.5 4.5 0 0 1-1.04-.328l-.068-.027c-.45-.188-.882-.48-1.266-.876a6.52 6.52 0 0 1-1.23-1.062c.224.384.468.802.73 1.252.264.45.546.92.841 1.407.295.488.577 1.002.842 1.407.263.45.506-.868.73 1.252h.01z"/></svg>
-                                    </button>
+                <!-- Aba Principal da Galeria com Pastas -->
+                <div id="gallery-main-content" class="gallery-tab-content active">
+                    <div class="grid grid-cols-12 gap-4 h-full">
+                        <!-- Coluna de Pastas -->
+                        <div class="col-span-3 bg-secondary rounded-lg p-2 flex flex-col">
+                            <h3 class="text-lg font-bold p-2" style="color: var(--color-accent);">Pastas</h3>
+                            <div id="gallery-folders-list" class="flex-grow overflow-y-auto pr-1">
+                                <!-- Lista de pastas aqui -->
+                            </div>
+                            <button onclick="openFolderModal('add')" class="btn btn-primary w-full mt-2 text-sm">Nova Pasta</button>
+                        </div>
+                        <!-- Coluna de Imagens -->
+                        <div class="col-span-9 bg-secondary rounded-lg p-2 flex flex-col">
+                            <div class="flex items-center gap-2 p-2 border-b mb-2" style="border-color: var(--color-border);">
+                                <h3 id="gallery-current-folder-name" class="text-lg font-bold" style="color: var(--color-accent);">Geral</h3>
+                                <div class="ml-auto flex items-center gap-2">
+                                    <button onclick="document.getElementById('gallery-upload-input').click()" class="btn btn-secondary text-sm">Adicionar Imagem</button>
+                                    <input type="file" id="gallery-upload-input" class="hidden" accept="image/*" multiple onchange="handleGalleryUpload(event)">
+                                    <button onclick="handleGalleryUrlAdd()" class="btn btn-secondary text-sm">Adicionar por URL</button>
                                 </div>
                             </div>
-                            <div class="w-full h-6 bg-tertiary rounded-full relative overflow-hidden border border-color">
-                                <div class="h-full rounded-full" style="width: ${percentage}%; background-color: ${barColor};"></div>
-                                <span class="absolute inset-0 flex items-center justify-center font-bold text-white text-sm">${currentVigor} / ${maxVigor}</span>
-                            </div>`;
-                        playerListEl.appendChild(playerCard);
-                    });
-                }, error => {
-                    console.error("Erro ao buscar jogadores online: ", error);
-                    document.getElementById('gm-player-list').innerHTML = '<p class="text-red-400">Erro ao carregar jogadores.</p>';
-                });
-        }
-        
-        async function openConditionModal(charName) {
-            const modal = document.getElementById('gm-condition-modal');
-            modal.style.display = 'flex';
-            bringToFront(modal);
-            document.getElementById('gm-condition-modal-title').textContent = `Atribuir Condições para ${charName}`;
-            const listEl = document.getElementById('gm-condition-list');
-            listEl.innerHTML = 'Carregando...';
-            const doc = await playersCollection.doc(charName).get();
-            const currentConditions = doc.exists ? doc.data().conditions || [] : [];
-            listEl.innerHTML = '';
-            const conditions = Object.keys(allConditions).sort((a, b) => allConditions[a].name.localeCompare(allConditions[b].name));
-            conditions.forEach(key => {
-                const condition = allConditions[key];
-                const isChecked = currentConditions.includes(key);
-                const colorClass = condition.type === 'bonus' ? 'text-green-400' : 'text-red-400';
-                listEl.innerHTML += `
-                    <div class="flex items-center">
-                        <input id="gm-cond-${key}" type="checkbox" class="hidden custom-checkbox" data-cond-key="${key}" ${isChecked ? 'checked' : ''}>
-                        <label for="gm-cond-${key}" class="cursor-pointer select-none ${colorClass}">${condition.name}</label>
-                    </div>`;
-            });
-            document.getElementById('gm-condition-save').onclick = () => savePlayerConditions(charName);
-        }
-        function closeConditionModal() { document.getElementById('gm-condition-modal').style.display = 'none'; }
-        async function savePlayerConditions(charName) {
-            const selectedConditions = Array.from(document.querySelectorAll('#gm-condition-list input:checked')).map(cb => cb.dataset.condKey);
-            await playersCollection.doc(charName).update({ conditions: selectedConditions });
-            closeConditionModal();
-        }
+                            <div id="gallery-images-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 overflow-y-auto p-2">
+                                <!-- Imagens da pasta selecionada aqui -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        // --- INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Verifica o login do Firebase PRIMEIRO
-            checkFirebaseConfig();
+                <!-- Aba de Figurinhas -->
+                <div id="stickers-main-content" class="gallery-tab-content">
+                    <div class="bg-secondary rounded-lg p-2 flex flex-col h-full">
+                        <div class="flex items-center gap-2 p-2 border-b mb-2" style="border-color: var(--color-border);">
+                             <h3 class="text-lg font-bold" style="color: var(--color-accent);">Figurinhas</h3>
+                             <button onclick="document.getElementById('sticker-upload-input').click()" class="btn btn-primary text-sm ml-auto">Carregar Figurinha</button>
+                             <input type="file" id="sticker-upload-input" class="hidden" accept="image/*,image/gif" onchange="handleStickerUpload(event)">
+                        </div>
+                         <div id="stickers-content" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4 overflow-y-auto p-2">
+                            <!-- Figurinhas aqui -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
-            // --- NOVOS LISTENERS DE MAPA ---
-            const viewport = document.getElementById('map-viewport');
-            viewport.addEventListener('wheel', handleMapZoom, { passive: false }); // {passive: false} é crucial para o preventDefault()
-            viewport.addEventListener('mousedown', handlePanStart);
-            viewport.addEventListener('dblclick', handleMapPing);
+    <!-- Modals -->
+    <div id="cropper-modal" class="modal-overlay">
+        <div class="modal-container rounded-lg shadow-xl w-full max-w-lg p-6">
+            <h3 class="text-xl font-semibold mb-4">Ajustar Imagem</h3>
+            <div class="w-full h-64 md:h-80 mb-4 bg-tertiary">
+                <img id="image-to-crop" src="">
+            </div>
+            <div class="flex justify-end space-x-4">
+                <button id="cancel-crop-btn" class="btn btn-secondary">Cancelar</button>
+                <button id="crop-and-save-btn" class="btn btn-primary">Cortar e Salvar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="clear-chat-modal" class="modal-overlay">
+        <div class="modal-container p-6 rounded-lg shadow-lg max-w-sm text-center">
+            <h3 class="font-condensed text-2xl mb-4" style="color: var(--color-accent);">Limpar Histórico do Chat?</h3>
+            <p class="mb-6" style="color: var(--color-text-secondary);">Esta ação não pode ser desfeita.</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4 mt-4">
+                <button id="clear-chat-local-btn" class="btn btn-secondary">Apenas para Mim</button>
+                <button id="clear-chat-all-btn" class="btn btn-danger">Para Todos</button>
+            </div>
+             <button id="clear-chat-cancel-btn" class="hover:text-primary mt-6 text-sm bg-transparent border-none" style="color: var(--color-text-secondary);">Cancelar</button>
+        </div>
+    </div>
 
-            // Listeners de Pan (no window, para arrastar "para fora" do viewport)
-            window.addEventListener('mousemove', handlePanMove);
-            window.addEventListener('mouseup', handlePanEnd);
-            window.addEventListener('mouseleave', handlePanEnd); // Para o pan se o mouse sair da janela
+    <div id="clear-bulletin-modal" class="modal-overlay">
+        <div class="modal-container p-6 rounded-lg shadow-lg max-w-sm text-center">
+            <h3 class="font-condensed text-2xl mb-4" style="color: var(--color-accent);">Limpar Quadro de Avisos?</h3>
+            <p class="mb-6" style="color: var(--color-text-secondary);">Todas as mensagens e imagens serão permanentemente apagadas. Esta ação não pode ser desfeita.</p>
+            <div class="flex justify-center gap-4 mt-4">
+                <button id="clear-bulletin-cancel-btn" class="btn btn-secondary">Cancelar</button>
+                <button id="clear-bulletin-confirm-btn" class="btn btn-danger">Limpar Tudo</button>
+            </div>
+        </div>
+    </div>
 
-            // Adiciona listeners aos botões
-            document.getElementById('add-token-btn').addEventListener('click', openGenericTokenModal);
-            document.getElementById('new-map-btn').addEventListener('click', createNewMap);
-            document.getElementById('change-bg-btn').addEventListener('click', openMapBgSourceModal);
-            document.getElementById('map-bg-from-computer').addEventListener('click', () => { closeMapBgSourceModal(); document.getElementById('map-bg-upload').click(); });
-            document.getElementById('map-bg-upload').addEventListener('change', handleMapBackgroundUpload);
-            document.getElementById('map-bg-confirm').addEventListener('click', confirmMapBg);
-            document.getElementById('map-bg-cancel').addEventListener('click', cancelMapBg);
-            document.getElementById('gm-condition-cancel').addEventListener('click', closeConditionModal);
+    <div id="custom-roll-modal" class="modal-overlay">
+        <div class="modal-container p-6 rounded-lg shadow-lg max-w-sm text-center">
+            <h3 class="font-condensed text-2xl mb-4" style="color: var(--color-accent);">Rolagem Customizada</h3>
+            <div class="mb-4">
+                <label for="custom-roll-modifier" class="block text-sm font-medium mb-2" style="color: var(--color-text-secondary);">Modificador</label>
+                <input type="number" id="custom-roll-modifier" value="0" class="w-24 text-center text-xl font-bold rounded-md p-2">
+            </div>
+            <p class="mb-6" style="color: var(--color-text-secondary);">Escolha o tipo de dado para a rolagem.</p>
+            <div class="flex justify-center gap-4 mt-4">
+                <button id="custom-roll-normal-btn" class="btn btn-primary py-2 px-6">Normal (1d12)</button>
+                <button id="custom-roll-aptidao-btn" class="btn btn-secondary py-2 px-6">Aptidão (2d6)</button>
+            </div>
+        </div>
+    </div>
+
+     <div id="attribute-roll-modal" class="modal-overlay">
+        <div class="modal-container p-6 rounded-lg shadow-lg max-w-sm text-center">
+            <h3 id="attribute-roll-modal-title" class="font-condensed text-2xl mb-4" style="color: var(--color-accent);">Rolar Teste?</h3>
+            <p class="mb-6" style="color: var(--color-text-secondary);">Como você gostaria de rolar o teste de atributo?</p>
+            <div class="flex justify-center gap-4 mt-4">
+                <button id="attribute-roll-normal-btn" class="btn btn-primary py-2 px-6">Normal (1d12)</button>
+                <button id="attribute-roll-aptidao-btn" class="btn btn-secondary py-2 px-6">Aptidão (2d6)</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="gm-condition-modal" class="modal-overlay">
+        <div class="modal-container p-4 rounded-lg shadow-lg">
+            <h3 id="gm-condition-modal-title" class="font-condensed text-xl mb-4" style="color: var(--color-accent);">Atribuir Condições</h3>
+            <div id="gm-condition-list" class="space-y-2"></div>
+            <div class="flex justify-end gap-4 mt-4">
+                <button id="gm-condition-cancel" class="btn-secondary py-2 px-4">Cancelar</button>
+                <button id="gm-condition-save" class="btn btn-primary py-2 px-4">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JANELAS INTERATIVAS (HABILIDADES, EVENTOS, ANOTACOES) -->
+    <div id="skills-window" class="modal-container shadow-2xl resize overflow-hidden">
+        <div class="interactive-window-header bg-tertiary p-2 flex justify-between items-center" style="border-bottom: 1px solid var(--color-border);">
+            <h3 id="skills-window-title" class="font-bold" style="color: var(--color-accent);">Habilidades</h3>
+            <div class="flex items-center gap-2">
+                <button class="interactive-window-maximize hover:text-primary" style="color: var(--color-text-secondary);">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4h4m12 4V4h-4M4 16v4h4m12-4v4h-4"></path></svg>
+                </button>
+                <button class="interactive-window-close hover:text-primary" style="color: var(--color-text-secondary);">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+        </div>
+        <div class="interactive-window-content">
+             <div style="border-bottom: 1px solid var(--color-border);">
+                <nav class="-mb-px flex space-x-2" aria-label="Skills Tabs">
+                    <button onclick="switchSubTab(event, 'habilidades-tab')" class="sub-tab-button active whitespace-nowrap py-2 px-3 border-b-2 border-transparent font-medium text-sm rounded-t-md" style="color: var(--color-text-secondary);">Habilidades</button>
+                    <button onclick="switchSubTab(event, 'confronto-tab')" class="sub-tab-button whitespace-nowrap py-2 px-3 border-b-2 border-transparent font-medium text-sm rounded-t-md" style="color: var(--color-text-secondary);">Confronto</button>
+                </nav>
+            </div>
+            <div id="habilidades-tab" class="sub-tab-content active p-1"><div id="quill-editor"></div></div>
+            <div id="confronto-tab" class="sub-tab-content h-full overflow-y-auto p-4">
+                <section class="mb-4">
+                    <h3 class="font-condensed text-lg border-b pb-1 mb-2" style="color: var(--color-accent); border-color: var(--color-border);">EFEITOS ATIVOS</h3>
+                    <div id="active-effects-display" class="space-y-2 text-sm">
+                         <p class="italic" style="color: var(--color-text-secondary);">Nenhum efeito ativo.</p>
+                    </div>
+                </section>
+                <section>
+                    <h3 class="font-condensed text-lg border-b pb-1 mb-2" style="color: var(--color-accent); border-color: var(--color-border);">SELECIONAR CONDIÇÕES</h3>
+                    <div id="conditions-checklist" class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm"></div>
+                </section>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAIS DA GALERIA -->
+    <div id="gallery-lightbox" class="modal-overlay" onclick="closeLightbox(event)">
+        <button onclick="closeLightbox(event)" class="absolute top-4 right-4 text-white text-5xl font-bold">&times;</button>
+        <img id="lightbox-image" src="" class="max-w-full max-h-full rounded-lg" style="max-height: 90vh;">
+    </div>
+     <div id="gallery-url-modal" class="modal-overlay">
+        <div class="modal-container p-5 rounded-lg shadow-lg max-w-md">
+            <h3 class="font-condensed text-xl mb-4" style="color: var(--color-accent);">Adicionar Imagem por URL</h3>
+            <p class="mb-2 text-sm" style="color: var(--color-text-secondary);">Por favor, insira a URL completa da imagem.</p>
+            <input type="text" id="gallery-url-input" class="w-full p-2 rounded-md" placeholder="https://...">
+            <div class="flex justify-end gap-4 mt-4">
+                <button onclick="document.getElementById('gallery-url-modal').style.display = 'none'" class="btn btn-secondary py-2 px-4">Cancelar</button>
+                <button onclick="submitUrlModal()" class="btn btn-primary py-2 px-4">Adicionar</button>
+            </div>
+        </div>
+    </div>
+     <div id="folder-modal" class="modal-overlay">
+        <div class="modal-container p-5 rounded-lg shadow-lg max-w-md">
+            <h3 id="folder-modal-title" class="font-condensed text-xl mb-4" style="color: var(--color-accent);">Nova Pasta</h3>
+            <input type="text" id="folder-name-input" class="w-full p-2 rounded-md" placeholder="Nome da pasta...">
+             <input type="hidden" id="folder-modal-id">
+             <input type="hidden" id="folder-modal-mode">
+            <div class="flex justify-end gap-4 mt-4">
+                <button onclick="document.getElementById('folder-modal').style.display = 'none'" class="btn btn-secondary py-2 px-4">Cancelar</button>
+                <button onclick="handleSaveFolder()" class="btn btn-primary py-2 px-4">Salvar</button>
+            </div>
+        </div>
+    </div>
+     <div id="gallery-context-menu">
+        <!-- Itens do menu serão adicionados dinamicamente -->
+    </div>
+    
+    <!-- Janela do Quadro de Avisos -->
+    <div id="bulletin-board-window" class="modal-container shadow-2xl hidden" style="position: fixed; top: 15%; left: 30%; width: 600px; height: 70vh; min-width: 450px; min-height: 400px; display: none; flex-direction: column; resize: both; overflow: auto;">
+        <div class="interactive-window-header bg-tertiary p-2 flex justify-between items-center" style="border-bottom: 1px solid var(--color-border); flex-shrink: 0;">
+            <h3 class="font-bold" style="color: var(--color-accent);">Quadro de Avisos</h3>
+            <div class="flex items-center gap-2">
+                 <button id="open-clear-bulletin-btn" class="hover:text-primary p-1" style="color: var(--color-text-secondary);" title="Limpar Quadro de Avisos">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+                 <button id="show-bulletin-btn" class="btn btn-primary text-sm py-1 px-3">Mostrar para Players</button>
+                 <button class="interactive-window-close hover:text-primary" style="color: var(--color-text-secondary);">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+        </div>
+        <div id="bulletin-board-messages" class="flex-grow overflow-y-auto p-4 space-y-4">
+            <!-- As mensagens do quadro de avisos aparecerão aqui -->
+        </div>
+        <div id="bulletin-board-input-container" class="border-t p-2 flex items-center gap-2" style="border-color: var(--color-border); flex-shrink: 0;">
+            <textarea id="bulletin-board-input" class="w-full p-2 rounded-md h-12" placeholder="Escreva um aviso..."></textarea>
+            <input type="file" id="bulletin-image-upload" class="hidden" accept="image/*">
+            <button onclick="document.getElementById('bulletin-image-upload').click()" class="btn btn-secondary p-2" title="Anexar Imagem">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/><path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12z"/></svg>
+            </button>
+            <button id="bulletin-send-btn" class="btn btn-primary">Enviar</button>
+        </div>
+    </div>
+
+
+    <!-- Botões Flutuantes -->
+    <div class="floating-button-container">
+         <!-- NOVO BOTÃO DE MAPA -->
+        <button onclick="window.open('mp.html', '_blank')" class="floating-button" title="Abrir Mapa">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-map-fill" viewBox="0 0 16 16" style="color: var(--color-accent);">
+                <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0-.5.5v3.26a.5.5 0 0 1-.5.5H6a.5.5 0 0 1-.5-.5V.5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0-.5.5v5.618c0 .818.393 1.544 1 2v4.722c0 .546.29 1.059.75 1.357a.5.5 0 0 0 .5-.866A1.5 1.5 0 0 1 2 12.34v-4.722c.607-.456 1-1.182 1-2v-5.618h4v3.26a1.5 1.5 0 0 0 1.5 1.5h3.5a1.5 1.5 0 0 0 1.5-1.5V.5h4v5.618c0 .818-.393 1.544-1 2v4.722c0 .546-.29 1.059-.75 1.357a.5.5 0 0 0 .5.866A1.5 1.5 0 0 1 14 12.34v-4.722c-.607-.456-1-1.182-1-2V.5z"/>
+            </svg>
+        </button>
+        <!-- FIM BOTÃO DE MAPA -->
+
+        <!-- NOVO BOTÃO DE CONFIG -->
+        <button id="config-button" class="floating-button" title="Configurações da Mesa">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-gear-fill" style="color: var(--color-accent);" viewBox="0 0 16 16">
+              <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413-1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.858 2.929 2.929 0 0 1 0 5.858z"/>
+            </svg>
+        </button>
+        <!-- FIM NOVO BOTÃO DE CONFIG -->
+
+        <button id="bulletin-board-toggle-button" class="floating-button" title="Quadro de Avisos">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-clipboard2-data-fill" style="color: var(--color-accent);" viewBox="0 0 16 16">
+                <path d="M10 .5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5.5.5 0 0 1 .5.5.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5.5.5 0 0 1 .5-.5"/>
+                <path d="M4.085 1H3.5A1.5 1.5 0 0 0 2 2.5v12A1.5 1.5 0 0 0 3.5 16h9a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 12.5 1h-.585c.055.156.085.325.085.5V2a1.5 1.5 0 0 1-1.5 1.5h-5A1.5 1.5 0 0 1 4 2v-.5c0-.175.03-.344.085-.5M10 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-4 4a1 1 0 1 1-2 0 1 1 0 0 1 2 0m1.5.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0m2-3a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/>
+            </svg>
+        </button>
+        <button id="gm-panel-button" class="floating-button" title="Painel do Mestre">
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-person-check-fill" style="color: var(--color-accent);" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15.854 5.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                <path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+            </svg>
+        </button>
+        <button id="chat-toggle-button" class="floating-button" title="Chat">
+            <span id="chat-notification-dot"></span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" style="color: var(--color-accent);" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Janela do Chat -->
+    <div id="chat-window" class="hidden">
+        <div id="chat-header">
+            <h3 class="flex-grow">Chat da Sessão</h3>
+            <button id="open-clear-chat-btn" class="hover:text-primary p-1" style="color: var(--color-text-secondary);" title="Limpar Chat">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </button>
+        </div>
+        <div id="chat-messages"></div>
+        <div id="chat-input-container">
+             <button id="custom-roll-btn" class="chat-action-btn" title="Rolagem Customizada">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M22 13.586v-3.172l-3.951-2.28c-.419-.242-.783-.663-1.002-1.123l1.58-4.394-2.771-2.771-4.394 1.58c-.46-.219-.881-.583-1.123-1.002L8.049 0H4.877L2.597 3.951c-.242.419-.663.783-1.123 1.002L0 6.533v3.172l3.951 2.28c.419.242.783.663 1.002 1.123l-1.58 4.394 2.771 2.771 4.394-1.58c.46.219.881.583 1.123 1.002l2.28 3.951h3.172l2.28-3.951c.242-.419-.663-.783-1.123-1.002l4.394-1.58 2.771-2.771-1.58-4.394c.219-.46.583-.881 1.002-1.123L22 13.586zM12 16c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4z"/></svg>
+            </button>
+            <input type="text" id="chat-input" placeholder="Digite como Mestre...">
+            <button id="chat-send-btn" class="btn btn-primary">Enviar</button>
+        </div>
+    </div>
+    
+    <!-- Painel do Mestre -->
+    <div id="gm-panel">
+        <div class="gm-panel-header flex justify-between items-center">
+            <span>Jogadores Online</span>
+            <button onclick="listenForOnlinePlayers(true)" title="Atualizar Players" class="p-1 hover:text-accent" style="color: var(--color-text-secondary);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                  <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                </svg>
+            </button>
+        </div>
+        <div id="gm-player-list" class="gm-panel-content">
+            <p style="color: var(--color-text-secondary);">Nenhum jogador online.</p>
+        </div>
+    </div>
+
+    <!-- NOVO: MODAL DE LOGIN DO FIREBASE (igual do fp.html) -->
+   <div id="firebase-config-modal" class="modal-overlay" style="display: none; z-index: 200;">
+        <div class="modal-container bg-secondary p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 class="font-condensed text-2xl mb-2 text-center" style="color: var(--color-accent);">Importar Banco de Dados</h3>
+            <p class="mb-6 text-sm text-center" style="color: var(--color-text-secondary);">Conecte-se para sincronizar o VTT.</p>
             
-            // Generic Token Modal
-            document.getElementById('generic-token-cancel').addEventListener('click', () => { document.getElementById('generic-token-modal').style.display = 'none'; });
-            document.getElementById('generic-token-confirm').addEventListener('click', createGenericToken);
-            document.getElementById('token-image-upload').addEventListener('change', handleTokenImageUpload);
-            document.getElementById('token-image-cancel').addEventListener('click', closeTokenImageAdjustModal);
-            document.getElementById('token-image-confirm').addEventListener('click', confirmTokenImageCrop);
+            <button onclick="document.getElementById('load-key-input-login').click()" class="btn btn-secondary w-full mb-4 flex items-center justify-center gap-2 py-3 border border-dashed" style="border-color: var(--color-accent);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                    <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                </svg>
+                Carregar Chave da Mesa (.json)
+            </button>
+            <input type="file" id="load-key-input-login" class="hidden" accept=".json" onchange="loadTableKey(event)">
 
-            // Traz modals para frente ao clicar
-            const windows = document.querySelectorAll('.modal-overlay');
-            windows.forEach(win => win.addEventListener('mousedown', () => bringToFront(win), true));
+            <div class="relative flex py-2 items-center mb-4">
+                <div class="flex-grow border-t" style="border-color: var(--color-border);"></div>
+                <span class="flex-shrink-0 mx-4 text-xs font-bold" style="color: var(--color-text-secondary);">OU MANUALMENTE</span>
+                <div class="flex-grow border-t" style="border-color: var(--color-border);"></div>
+            </div>
             
-            // Listeners são chamados DENTRO de initializeFirebase() agora
-        });
-    </script>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs" style="color: var(--color-text-secondary);">API Key</label>
+                    <input type="text" id="fb-apiKey" class="w-full p-2 rounded-md text-sm" placeholder="AIzaSy...">
+                </div>
+                <div>
+                    <label class="text-xs" style="color: var(--color-text-secondary);">Auth Domain</label>
+                    <input type="text" id="fb-authDomain" class="w-full p-2 rounded-md text-sm" placeholder="projeto.firebaseapp.com">
+                </div>
+                <div>
+                    <label class="text-xs" style="color: var(--color-text-secondary);">Project ID</label>
+                    <input type="text" id="fb-projectId" class="w-full p-2 rounded-md text-sm" placeholder="id-do-projeto">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-xs" style="color: var(--color-text-secondary);">Storage Bucket</label>
+                        <input type="text" id="fb-storageBucket" class="w-full p-2 rounded-md text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs" style="color: var(--color-text-secondary);">Messaging Sender ID</label>
+                        <input type="text" id="fb-messagingSenderId" class="w-full p-2 rounded-md text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs" style="color: var(--color-text-secondary);">App ID</label>
+                    <input type="text" id="fb-appId" class="w-full p-2 rounded-md text-sm">
+                </div>
+            </div>
+
+            <div class="flex justify-center gap-4 mt-6">
+                <button onclick="saveAndConnectFirebase()" class="btn btn-primary py-2 px-6 rounded-md w-full">Conectar</button>
+            </div>
+             <p class="text-xs mt-2 text-center cursor-pointer hover:text-red-400" style="color: var(--color-text-secondary);" onclick="clearFirebaseConfig()">Limpar dados salvos</p>
+        </div>
+    </div>
+
+    <!-- NOVO: MODAL DE CONFIGURAÇÕES DA MESA -->
+    <div id="config-modal" class="modal-overlay" style="display: none; z-index: 190;">
+        <div class="modal-container p-6 rounded-lg shadow-lg max-w-sm w-full text-center">
+            <h3 class="font-condensed text-2xl mb-6" style="color: var(--color-accent);">Configurações da Mesa</h3>
+            
+            <div class="space-y-4">
+                <button onclick="generateTableKey()" class="btn btn-primary w-full">Gerar Chave da Mesa (JSON)</button>
+                <button onclick="document.getElementById('load-key-input').click()" class="btn btn-secondary w-full">Entrar na Mesa (Carregar JSON)</button>
+                <input type="file" id="load-key-input" class="hidden" accept=".json" onchange="loadTableKey(event)">
+            </div>
+
+            <button onclick="closeConfigModal()" class="hover:text-primary mt-8 text-sm bg-transparent border-none" style="color: var(--color-text-secondary);">Fechar</button>
+        </div>
+    </div>
+    
+<script src="pm/script_pm.js"></script>
 </body>
 </html>
