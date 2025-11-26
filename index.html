@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -194,7 +194,8 @@
         }
 
         .nav-btn {
-            width: 20%; 
+            /* Ajustado de width: 20% para flex: 1 para acomodar mais itens */
+            flex: 1;
             padding: 1rem 0;
             background: transparent;
             border: none;
@@ -206,6 +207,9 @@
             letter-spacing: 0.05em;
             cursor: pointer;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .nav-btn:hover { color: white; background-color: rgba(255,255,255,0.05); }
@@ -556,6 +560,10 @@
             <button onclick="goToSlide(2)" id="tab-2" class="nav-btn"><i class="fa-solid fa-users" style="margin-right: 0.5rem;"></i> Jogador</button>
             <button onclick="goToSlide(3)" id="tab-3" class="nav-btn"><i class="fa-solid fa-dragon" style="margin-right: 0.5rem;"></i> Mestre</button>
             <button onclick="goToSlide(4)" id="tab-4" class="nav-btn"><i class="fa-solid fa-scroll" style="margin-right: 0.5rem;"></i> Ferramentas</button>
+            <!-- ABA ACERVO (Abre em nova página ou navega) -->
+            <a href="acervo.html" class="nav-btn" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                <i class="fa-solid fa-book-journal-whills" style="margin-right: 0.5rem;"></i> Acervo
+            </a>
         </div>
     </nav>
 
@@ -648,6 +656,11 @@
                             </li>
                             <li class="tool-item group">
                                 <span><a href="tools/criador_EE.html" style="display: flex; align-items: center;"><i class="fa-solid fa-wand-magic-sparkles tool-icon"></i> Criador de Efeitos Especiais</a></span>
+                                <i class="fa-solid fa-chevron-right tool-arrow"></i>
+                            </li>
+                            <!-- NOVO ITEM -->
+                            <li class="tool-item group">
+                                <span><a href="tools/oponentes.html" target="_blank" style="display: flex; align-items: center;"><i class="fa-solid fa-skull tool-icon" style="color:#ef4444;"></i> Criador de Oponentes</a></span>
                                 <i class="fa-solid fa-chevron-right tool-arrow"></i>
                             </li>
                             <li class="tool-item group">

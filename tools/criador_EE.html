@@ -5,458 +5,137 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forja de Efeitos Especiais - Estórias RPG</title>
     
-    <!-- Font Awesome para Ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     
-    <!-- html2canvas para gerar PNG -->
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
     <style>
-        /* =========================================
-           CSS NATIVO GÓTICO
-        ========================================== */
-        
         :root {
-            --bg-dark: #050505;
-            --bg-panel: #1a1a1a;
-            --text-main: #d1d5db;
-            --text-muted: #9ca3af;
-            --border-color: #333;
-            --accent-silver: #C0C0C0;
-            
-            /* Cores Semânticas */
-            --color-defensive: #3b82f6; /* Azul */
-            --color-offensive: #ef4444; /* Vermelho */
-            --color-evasive: #10b981; /* Verde */
-            --color-mitigation: #daa520; /* Ouro */
+            --bg-dark: #050505; --bg-panel: #1a1a1a; --text-main: #d1d5db; --text-muted: #9ca3af;
+            --border-color: #333; --accent-silver: #C0C0C0;
+            --color-defensive: #3b82f6; --color-offensive: #ef4444; --color-evasive: #10b981; --color-mitigation: #daa520;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
         body {
-            background-color: #0c1421; 
-            color: var(--text-main);
-            font-family: 'EB Garamond', serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            position: relative; 
-            overflow-x: hidden;
+            background-color: #0c1421; color: var(--text-main); font-family: 'EB Garamond', serif;
+            min-height: 100vh; display: flex; flex-direction: column; position: relative; overflow-x: hidden;
         }
-
-        /* Wallpaper */
         body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1;
-            background-image: url('img/index/wall1.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            filter: grayscale(100%); 
-            opacity: 0.3; 
-            mix-blend-mode: overlay; 
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background-image: url('img/index/wall1.jpg'); background-size: cover; background-position: center;
+            background-attachment: fixed; filter: grayscale(100%); opacity: 0.3; mix-blend-mode: overlay; 
         }
-
         h1, h2, h3, .font-gothic { font-family: 'Cinzel', serif; text-transform: uppercase; }
-
-        /* Header Simples */
         header {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-            background-color: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 1rem; border-bottom: 1px solid var(--border-color); background-color: rgba(0,0,0,0.5);
+            display: flex; justify-content: space-between; align-items: center;
         }
-
         .home-link { color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; transition: color 0.2s; }
         .home-link:hover { color: white; }
-
-        /* Layout Principal */
-        .main-container {
-            display: flex;
-            flex-grow: 1;
-            padding: 2rem;
-            gap: 2rem;
-            max-width: 1600px;
-            width: 100%;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        /* Coluna Esquerda: Editor */
-        .editor-column {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            min-width: 0;
-        }
-
-        /* Seções de Input (Agora unificadas no estilo gótico) */
+        .main-container { display: flex; flex-grow: 1; padding: 2rem; gap: 2rem; max-width: 1600px; width: 100%; margin: 0 auto; position: relative; }
+        .editor-column { flex: 1; display: flex; flex-direction: column; gap: 1.5rem; min-width: 0; }
         .section-box {
-            background-color: rgba(26, 26, 26, 0.9);
-            border: 1px solid var(--border-color);
-            padding: 1.5rem;
-            border-radius: 4px;
-            position: relative;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            background-color: rgba(26, 26, 26, 0.9); border: 1px solid var(--border-color); padding: 1.5rem;
+            border-radius: 4px; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
-        
         .section-box input, .section-box textarea, .section-box select {
-            width: 100%;
-            background-color: #111;
-            border: 1px solid #444;
-            color: white;
-            padding: 0.75rem;
-            font-family: 'EB Garamond', serif;
-            font-size: 1.1rem;
-            resize: vertical;
-            margin-top: 0.5rem;
+            width: 100%; background-color: #111; border: 1px solid #444; color: white; padding: 0.75rem;
+            font-family: 'EB Garamond', serif; font-size: 1.1rem; resize: vertical; margin-top: 0.5rem;
         }
-        
-        .section-box label {
-            display: block;
-            color: var(--text-muted);
-            font-family: 'Cinzel', serif;
-            font-size: 0.9rem;
-            margin-bottom: 0.2rem;
-        }
-
+        .section-box label { display: block; color: var(--text-muted); font-family: 'Cinzel', serif; font-size: 0.9rem; margin-bottom: 0.2rem; }
         .section-title {
-            position: absolute;
-            top: -10px;
-            left: 10px;
-            background-color: #1a1a1a;
-            padding: 0 10px;
-            font-family: 'Cinzel', serif;
-            font-size: 0.9rem;
-            color: var(--accent-silver);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
+            position: absolute; top: -10px; left: 10px; background-color: #1a1a1a; padding: 0 10px;
+            font-family: 'Cinzel', serif; font-size: 0.9rem; color: var(--accent-silver); border: 1px solid var(--border-color); border-radius: 4px;
         }
-
-        /* Controles de Quantidade (+/-) */
-        .quantity-control {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        .quantity-btn {
-            background-color: #333;
-            border: 1px solid #555;
-            color: white;
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-        }
-        .quantity-btn:hover { background-color: #555; } /* Hover para o botão */
-
-        .quantity-display {
-            width: 60px;
-            text-align: center;
-            background-color: #111;
-            border: 1px solid #444;
-            padding: 0.2rem;
-            color: white;
-        }
-
-        /* Checkboxes customizados */
-        .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-            cursor: pointer;
-        }
+        .quantity-control { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+        .quantity-btn { background-color: #333; border: 1px solid #555; color: white; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .quantity-btn:hover { background-color: #555; }
+        .quantity-display { width: 60px; text-align: center; background-color: #111; border: 1px solid #444; padding: 0.2rem; color: white; }
+        .checkbox-wrapper { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; cursor: pointer; }
         .checkbox-wrapper input { width: auto; margin: 0; }
-
-        /* Ações (Botões) */
-        .actions-row { display: flex; gap: 1rem; margin-top: 1rem; }
         
+        .actions-row { display: flex; gap: 1rem; margin-top: 1rem; }
         .btn-action {
-            flex: 1;
-            padding: 1rem;
-            border: none;
-            font-family: 'Cinzel', serif;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: filter 0.2s;
-            color: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
+            flex: 1; padding: 1rem; border: none; font-family: 'Cinzel', serif; font-weight: bold; font-size: 1rem;
+            cursor: pointer; text-transform: uppercase; transition: filter 0.2s; color: #000; display: flex;
+            align-items: center; justify-content: center; gap: 0.5rem;
         }
         .btn-action:hover { filter: brightness(1.2); }
         .btn-red { background-color: #ef4444; color: white; }
         .btn-green { background-color: #10b981; color: white; }
-        
-        /* Preview Container */
-        .preview-box {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #0a0a0a;
-            border: 1px solid #333;
-            padding: 2rem;
-            min-height: 300px;
-        }
+        .btn-send-acervo { background: linear-gradient(to right, #7f1d1d, #991b1b); color: white; border: 1px solid #b91c1c; box-shadow: 0 0 15px rgba(185, 28, 28, 0.3); }
 
-        /* CARD FINAL */
+        .preview-box { display: flex; justify-content: center; align-items: center; background-color: #0a0a0a; border: 1px solid #333; padding: 2rem; min-height: 300px; }
         #card-render {
-            width: 400px;
-            background-color: #1a1a1a;
-            border: 2px solid #444;
-            border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
-            overflow: hidden;
-            position: relative;
-            transition: border-radius 0.3s, clip-path 0.3s; /* Transição suave para formas */
+            width: 400px; background-color: #1a1a1a; border: 2px solid #444; border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.8); overflow: hidden; position: relative; transition: border-radius 0.3s, clip-path 0.3s;
         }
-        
-        /* Estilos de Tipo de Efeito */
-        #card-render.type-magic {
-            border-radius: 20px;
-        }
-        
-        #card-render.type-technique {
-            border-radius: 0;
-            clip-path: polygon(
-                15px 0, 100% 0, 
-                100% calc(100% - 15px), calc(100% - 15px) 100%, 
-                0 100%, 0 15px
-            );
-            border: 2px solid #444; /* Mantém borda */
-        }
+        #card-render.type-magic { border-radius: 20px; }
+        #card-render.type-technique { border-radius: 0; clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px); border: 2px solid #444; }
+        .card-header { background: linear-gradient(to right, #222, #000); padding: 15px; border-bottom: 2px solid var(--accent-silver); display: flex; justify-content: space-between; align-items: center; }
+        .card-title-group { display: flex; align-items: center; gap: 10px; }
+        .card-icon { color: var(--accent-silver); font-size: 1.2rem; }
+        .card-title { font-family: 'Cinzel', serif; font-weight: 900; color: var(--accent-silver); font-size: 1.2rem; text-shadow: 0 2px 2px black; margin: 0; }
+        .card-cost { font-family: 'Cinzel', serif; color: var(--text-muted); font-weight: bold; border: 1px solid var(--border-color); padding: 2px 8px; border-radius: 4px; font-size: 0.9rem; }
+        .card-body { padding: 15px; color: #d1d5db; font-size: 1rem; line-height: 1.6; min-height: 100px; }
+        .card-section-block { margin-top: 8px; padding-top: 8px; border-top: 1px solid #333; font-size: 0.9rem; }
+        .card-section-title { font-family: 'Cinzel', serif; font-weight: bold; display: block; margin-bottom: 4px; font-size: 0.85rem; text-transform: uppercase; }
+        .card-footer { background-color: #111; padding: 10px 15px; border-top: 1px solid #333; color: var(--text-muted); font-size: 0.9rem; font-style: italic; }
+        .approach-tag { position: absolute; top: 0; left: 0; width: 5px; height: 100%; }
 
-        .card-header {
-            background: linear-gradient(to right, #222, #000);
-            padding: 15px;
-            border-bottom: 2px solid var(--accent-silver);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .card-title-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .card-icon {
-            color: var(--accent-silver);
-            font-size: 1.2rem;
-        }
-        
-        .card-title {
-            font-family: 'Cinzel', serif;
-            font-weight: 900;
-            color: var(--accent-silver); /* Padrão, muda com JS */
-            font-size: 1.2rem;
-            text-shadow: 0 2px 2px black;
-            margin: 0;
-        }
-        
-        .card-cost {
-            font-family: 'Cinzel', serif;
-            color: var(--text-muted);
-            font-weight: bold;
-            border: 1px solid var(--border-color);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-        }
-        
-        .card-body {
-            padding: 15px;
-            color: #d1d5db; /* Padrão, muda com JS */
-            font-size: 1rem;
-            line-height: 1.6;
-            min-height: 100px;
-        }
-
-        /* Estilo para Efeitos Secundários e Mitigação no Card */
-        .card-section-block {
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px solid #333;
-            font-size: 0.9rem;
-        }
-        .card-section-title {
-            font-family: 'Cinzel', serif;
-            font-weight: bold;
-            display: block;
-            margin-bottom: 4px;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-        }
-        
-        .card-footer {
-            background-color: #111;
-            padding: 10px 15px;
-            border-top: 1px solid #333;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            font-style: italic;
-        }
-
-        /* Tag lateral de cor */
-        .approach-tag {
-            position: absolute;
-            top: 0; left: 0; width: 5px; height: 100%;
-        }
-
-        /* Coluna Direita: Instruções */
-        .instructions-column {
-            width: 350px;
-            background-color: rgba(0,0,0,0.8);
-            border: 1px solid var(--border-color);
-            height: fit-content;
-            transition: width 0.3s;
-            position: relative;
-            flex-shrink: 0;
-        }
-        
+        .instructions-column { width: 350px; background-color: rgba(0,0,0,0.8); border: 1px solid var(--border-color); height: fit-content; transition: width 0.3s; position: relative; flex-shrink: 0; }
         .instructions-column.minimized { width: 40px; overflow: hidden; }
-        
-        .instructions-header {
-            background-color: var(--bg-panel);
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
+        .instructions-header { background-color: var(--bg-panel); padding: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); }
         .instructions-content { padding: 1.5rem; font-size: 0.95rem; line-height: 1.6; max-height: 80vh; overflow-y: auto; }
         .instructions-content h3 { color: var(--accent-silver); margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1rem; font-family: 'Cinzel', serif; }
         .instructions-content ul { padding-left: 1.5rem; margin-bottom: 1rem; }
         .instructions-content li { margin-bottom: 0.5rem; color: var(--text-muted); }
-
-        .disclaimer-box {
-            margin-top: 2rem;
-            padding: 10px;
-            background-color: rgba(200, 0, 0, 0.1);
-            border: 1px solid var(--color-offensive);
-            color: var(--text-main);
-            font-style: italic;
-            text-align: center;
-            font-family: 'Cinzel', serif;
-            font-size: 0.8rem;
-        }
-
+        .disclaimer-box { margin-top: 2rem; padding: 10px; background-color: rgba(200, 0, 0, 0.1); border: 1px solid var(--color-offensive); color: var(--text-main); font-style: italic; text-align: center; font-family: 'Cinzel', serif; font-size: 0.8rem; }
         .toggle-btn { background: none; border: none; color: white; cursor: pointer; }
-        
-        .minimized-text {
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-            color: var(--text-muted);
-            margin: 20px auto;
-            font-family: 'Cinzel', serif;
-            letter-spacing: 2px;
-            display: none;
-        }
+        .minimized-text { writing-mode: vertical-rl; text-orientation: mixed; color: var(--text-muted); margin: 20px auto; font-family: 'Cinzel', serif; letter-spacing: 2px; display: none; }
         .instructions-column.minimized .minimized-text { display: block; }
-        .instructions-column.minimized .instructions-content, 
-        .instructions-column.minimized .instructions-header { display: none; }
+        .instructions-column.minimized .instructions-content, .instructions-column.minimized .instructions-header { display: none; }
+        .maximize-btn { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: transparent; border: none; cursor: pointer; }
 
-        .maximize-btn {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: transparent; border: none; cursor: pointer;
-        }
-
-        /* Listas Dropdown */
         .dropdown-container { position: relative; display: inline-block; width: 100%; }
-        .dropdown-btn {
-            width: 100%; background-color: #111; border: 1px solid #444; color: white;
-            padding: 0.75rem; text-align: left; cursor: pointer; font-family: 'EB Garamond', serif;
-        }
-        .dropdown-menu {
-            display: none; position: absolute; z-index: 10; top: 100%; left: 0; width: 100%;
-            background-color: #1a1a1a; border: 1px solid #444; max-height: 200px; overflow-y: auto;
-        }
+        .dropdown-btn { width: 100%; background-color: #111; border: 1px solid #444; color: white; padding: 0.75rem; text-align: left; cursor: pointer; font-family: 'EB Garamond', serif; }
+        .dropdown-menu { display: none; position: absolute; z-index: 10; top: 100%; left: 0; width: 100%; background-color: #1a1a1a; border: 1px solid #444; max-height: 200px; overflow-y: auto; }
         .dropdown-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #333; }
         .dropdown-item:hover { background-color: #333; }
         .dropdown-item .desc { font-size: 0.8rem; color: #999; display: block; margin-top: 2px; }
 
-        /* Estilo para Modais de Perguntas */
-        .modal-overlay {
-            position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.8);
-            display: none; justify-content: center; align-items: center; z-index: 1000;
-        }
-        .modal-content {
-            background-color: var(--bg-panel); color: var(--text-main);
-            padding: 20px; border-radius: 8px; max-width: 400px; width: 90%;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
-            position: relative;
-        }
-        .modal-buttons {
-            display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;
-        }
-        .modal-buttons button {
-            padding: 8px 15px; border: 1px solid var(--border-color); background-color: #333;
-            color: var(--text-main); cursor: pointer; font-family: 'Cinzel', serif;
-        }
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background-color: var(--bg-panel); color: var(--text-main); padding: 20px; border-radius: 8px; max-width: 400px; width: 90%; box-shadow: 0 0 20px rgba(0, 0, 0, 0.9); position: relative; }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+        .modal-buttons button { padding: 8px 15px; border: 1px solid var(--border-color); background-color: #333; color: var(--text-main); cursor: pointer; font-family: 'Cinzel', serif; }
         .modal-buttons button:hover { background-color: #444; }
         .modal-buttons .confirm { background-color: var(--color-evasive); color: white; }
 
-        /* Inputs Específicos de Área - Estilo Unificado */
-        .area-specific-group {
-            margin-top: 10px;
-            background-color: #111;
-            padding: 10px;
-            border: 1px solid #333;
-            border-radius: 4px;
-        }
-        .area-input-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
+        .area-specific-group { margin-top: 10px; background-color: #111; padding: 10px; border: 1px solid #333; border-radius: 4px; }
+        .area-input-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .area-input-row:last-child { margin-bottom: 0; }
         .area-input-row label { margin: 0; flex: 1; font-size: 0.9rem; }
         
-        .unit-label {
-            color: #666;
-            font-size: 0.8rem;
-            margin-left: 5px;
-        }
-
+        .status-bar { position: fixed; bottom: 10px; right: 10px; font-size: 0.8rem; color: #666; }
+        .status-bar.online { color: #10b981; }
     </style>
 </head>
 <body>
 
     <header>
         <div class="flex items-center gap-4" style="display: flex; align-items: center; gap: 1rem;">
-            <a href="index.html" class="home-link">
-                <i class="fa-solid fa-arrow-left"></i> Voltar
-            </a>
+            <a href="index.html" class="home-link"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
             <h1 class="font-gothic text-xl text-white" style="color: white; font-size: 1.2rem; margin: 0;">Forja de Efeitos Especiais</h1>
+            <span id="connStatus" class="status-bar"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
         </div>
     </header>
 
     <div class="main-container">
-        
         <!-- Coluna Editor -->
         <div class="editor-column">
-
             <!-- 1. Título e Abordagem -->
             <div class="section-box">
                 <span class="section-title">1. Título e Abordagem</span>
@@ -480,18 +159,12 @@
             <!-- 2. Efeito Principal -->
             <div class="section-box">
                 <span class="section-title">2. Efeito Principal</span>
-                
-                <!-- Lista de Bônus/Ônus (Principal) -->
                 <label>Bônus ou Ônus Principal (Sem custo extra)</label>
                 <div class="dropdown-container">
                     <button class="dropdown-btn" id="btn-main-effect" onclick="toggleDropdown('effect-list')">Selecionar Efeito...</button>
-                    <div id="effect-list" class="dropdown-menu">
-                        <!-- Preenchido via JS -->
-                    </div>
+                    <div id="effect-list" class="dropdown-menu"></div>
                 </div>
-
                 <div style="margin-top: 1rem; display: flex; gap: 2rem;">
-                    <!-- Dano (ATUALIZADO: Apenas Vigor) -->
                     <div>
                         <label>Dano ao Vigor</label>
                         <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.2rem;">
@@ -503,8 +176,6 @@
                         </div>
                         <small style="color: #666;">Até 2: grátis. +1 custo a cada 2 extra.</small>
                     </div>
-
-                    <!-- Condição -->
                     <div class="checkbox-wrapper">
                         <input type="checkbox" id="input-condition" onchange="calculateCost()">
                         <label for="input-condition">Inflige Condição (+2 Custo)</label>
@@ -515,7 +186,6 @@
             <!-- 3. Efeitos Secundários -->
             <div class="section-box">
                 <span class="section-title">3. Efeitos Secundários (+1 Custo por Item)</span>
-                
                 <div>
                     <label>Bônus/Ônus Adicionais</label>
                     <div class="quantity-control">
@@ -530,25 +200,19 @@
             <!-- 4. Área e Mitigação -->
             <div class="section-box">
                 <span class="section-title">4. Área e Mitigação</span>
-                
                 <div style="margin-bottom: 1.5rem;">
                     <label>Alcance/Área de Efeito</label>
-                    
                     <div class="area-options" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                        <!-- Alvo Único (Padrão) -->
                         <div class="checkbox-wrapper" style="border: 1px solid #444; padding: 10px; border-radius: 4px;">
                             <input type="radio" name="area-type" id="area-single" value="single" checked onchange="calculateCost()">
                             <label for="area-single" style="margin: 0; color: white;">Alvo Único (até 9m)</label>
                         </div>
-                        
-                        <!-- Área Especial -->
                         <div class="checkbox-wrapper" style="border: 1px solid #444; padding: 10px; border-radius: 4px;">
                             <input type="radio" name="area-type" id="area-special" value="special" onchange="calculateCost()">
                             <label for="area-special" style="margin: 0; color: white;">Área Especial (+1 Custo Base)</label>
                         </div>
                     </div>
                     
-                    <!-- Opções de Área (Aparece se for "special") -->
                     <div id="area-details" style="margin-top: 1rem; display: none;">
                         <label>Tipo de Área</label>
                         <select id="area-shape" onchange="toggleAreaSpecifics(); calculateCost();">
@@ -559,91 +223,26 @@
                             <option value="pilar">Pilar</option>
                         </select>
 
-                        <!-- Inputs: Esfera/Quadrado -->
                         <div id="std-shape-inputs" class="area-specific-group" style="display: none;">
-                            <div class="area-input-row">
-                                <label>Tamanho (Base 1.5m)</label>
-                                <div class="quantity-control">
-                                    <button class="quantity-btn" onclick="changeValue('input-std-size', -1.5)">-</button>
-                                    <input type="number" id="input-std-size" class="quantity-display" value="1.5" readonly>
-                                    <button class="quantity-btn" onclick="changeValue('input-std-size', 1.5)">+</button>
-                                </div>
-                            </div>
-                            <div class="area-input-row">
-                                <label>Alcance (Base 9m)</label>
-                                <div class="quantity-control">
-                                    <button class="quantity-btn" onclick="changeValue('input-std-range', -1.5)">-</button>
-                                    <input type="number" id="input-std-range" class="quantity-display" value="9" readonly>
-                                    <button class="quantity-btn" onclick="changeValue('input-std-range', 1.5)">+</button>
-                                </div>
-                            </div>
+                            <div class="area-input-row"><label>Tamanho (Base 1.5m)</label><div class="quantity-control"><button class="quantity-btn" onclick="changeValue('input-std-size', -1.5)">-</button><input type="number" id="input-std-size" class="quantity-display" value="1.5" readonly><button class="quantity-btn" onclick="changeValue('input-std-size', 1.5)">+</button></div></div>
+                            <div class="area-input-row"><label>Alcance (Base 9m)</label><div class="quantity-control"><button class="quantity-btn" onclick="changeValue('input-std-range', -1.5)">-</button><input type="number" id="input-std-range" class="quantity-display" value="9" readonly><button class="quantity-btn" onclick="changeValue('input-std-range', 1.5)">+</button></div></div>
                         </div>
-
-                        <!-- Inputs: Linha -->
                         <div id="line-inputs" class="area-specific-group" style="display: none;">
-                            <div class="area-input-row">
-                                <label>Comprimento (Base 4.5m)</label>
-                                <div class="quantity-control">
-                                    <button class="quantity-btn" onclick="changeValue('input-line-length', -1.5)">-</button>
-                                    <input type="number" id="input-line-length" class="quantity-display" value="4.5" readonly>
-                                    <button class="quantity-btn" onclick="changeValue('input-line-length', 1.5)">+</button>
-                                </div>
-                            </div>
-                            <div class="area-input-row">
-                                <label>Espessura (Base 1.5m)</label>
-                                <div class="quantity-control">
-                                    <button class="quantity-btn" onclick="changeValue('input-line-thickness', -1.5)">-</button>
-                                    <input type="number" id="input-line-thickness" class="quantity-display" value="1.5" readonly>
-                                    <button class="quantity-btn" onclick="changeValue('input-line-thickness', 1.5)">+</button>
-                                </div>
-                            </div>
+                            <div class="area-input-row"><label>Comprimento (Base 4.5m)</label><div class="quantity-control"><button class="quantity-btn" onclick="changeValue('input-line-length', -1.5)">-</button><input type="number" id="input-line-length" class="quantity-display" value="4.5" readonly><button class="quantity-btn" onclick="changeValue('input-line-length', 1.5)">+</button></div></div>
+                            <div class="area-input-row"><label>Espessura (Base 1.5m)</label><div class="quantity-control"><button class="quantity-btn" onclick="changeValue('input-line-thickness', -1.5)">-</button><input type="number" id="input-line-thickness" class="quantity-display" value="1.5" readonly><button class="quantity-btn" onclick="changeValue('input-line-thickness', 1.5)">+</button></div></div>
                         </div>
-
-                        <!-- Inputs: Cone -->
                         <div id="cone-inputs" class="area-specific-group" style="display: none;">
-                            <div class="area-input-row">
-                                <label>Comprimento (Base 4.5m)</label>
-                                <div class="quantity-control">
-                                    <button class="quantity-btn" onclick="changeValue('input-cone-length', -1.5)">-</button>
-                                    <input type="number" id="input-cone-length" class="quantity-display" value="4.5" readonly>
-                                    <button class="quantity-btn" onclick="changeValue('input-cone-length', 1.5)">+</button>
-                                </div>
-                            </div>
-                            <div class="area-input-row">
-                                <label>Largura Final (Base 4.5m)</label>
-                                <div class="quantity-control">
-                                    <button class="quantity-btn" onclick="changeValue('input-cone-width', -1.5)">-</button>
-                                    <input type="number" id="input-cone-width" class="quantity-display" value="4.5" readonly>
-                                    <button class="quantity-btn" onclick="changeValue('input-cone-width', 1.5)">+</button>
-                                </div>
-                            </div>
+                            <div class="area-input-row"><label>Comprimento (Base 4.5m)</label><div class="quantity-control"><button class="quantity-btn" onclick="changeValue('input-cone-length', -1.5)">-</button><input type="number" id="input-cone-length" class="quantity-display" value="4.5" readonly><button class="quantity-btn" onclick="changeValue('input-cone-length', 1.5)">+</button></div></div>
+                            <div class="area-input-row"><label>Largura Final (Base 4.5m)</label><div class="quantity-control"><button class="quantity-btn" onclick="changeValue('input-cone-width', -1.5)">-</button><input type="number" id="input-cone-width" class="quantity-display" value="4.5" readonly><button class="quantity-btn" onclick="changeValue('input-cone-width', 1.5)">+</button></div></div>
                         </div>
-
-                        <!-- Inputs: Pilar -->
                         <div id="pillar-inputs" class="area-specific-group" style="display: none;">
-                            <div class="area-input-row">
-                                <label>Raio (Base 1.5m)</label>
-                                <div class="quantity-control">
-                                    <button class="quantity-btn" onclick="changeValue('input-pillar-radius', -1.5)">-</button>
-                                    <input type="number" id="input-pillar-radius" class="quantity-display" value="1.5" readonly>
-                                    <button class="quantity-btn" onclick="changeValue('input-pillar-radius', 1.5)">+</button>
-                                </div>
-                            </div>
-                            <div class="area-input-row">
-                                <label>Altura (Base 3m)</label>
-                                <div class="quantity-control">
-                                    <button class="quantity-btn" onclick="changeValue('input-pillar-height', -1.5)">-</button>
-                                    <input type="number" id="input-pillar-height" class="quantity-display" value="3" readonly>
-                                    <button class="quantity-btn" onclick="changeValue('input-pillar-height', 1.5)">+</button>
-                                </div>
-                            </div>
+                            <div class="area-input-row"><label>Raio (Base 1.5m)</label><div class="quantity-control"><button class="quantity-btn" onclick="changeValue('input-pillar-radius', -1.5)">-</button><input type="number" id="input-pillar-radius" class="quantity-display" value="1.5" readonly><button class="quantity-btn" onclick="changeValue('input-pillar-radius', 1.5)">+</button></div></div>
+                            <div class="area-input-row"><label>Altura (Base 3m)</label><div class="quantity-control"><button class="quantity-btn" onclick="changeValue('input-pillar-height', -1.5)">-</button><input type="number" id="input-pillar-height" class="quantity-display" value="3" readonly><button class="quantity-btn" onclick="changeValue('input-pillar-height', 1.5)">+</button></div></div>
                         </div>
-
                         <small style="color: #666; margin-top: 0.5rem; display: block;">+1 Custo a cada 1.5m extra nas dimensões ou alcance.</small>
                     </div>
                 </div>
 
-                <!-- Mitigação -->
                 <div>
                     <label>Formas de Mitigação (-1 Custo por Forma)</label>
                     <div class="quantity-control">
@@ -655,13 +254,11 @@
                 </div>
             </div>
             
-            <!-- Campo de Texto Livre (Descrição Final) -->
              <div class="section-box">
                 <span class="section-title">Descrição Final (Editável)</span>
                 <textarea id="final-desc" rows="4" oninput="updatePreview()">Descrição gerada automaticamente...</textarea>
             </div>
 
-            <!-- 6. Tipo de Efeito (MOVIDO PARA CÁ) -->
             <div class="section-box">
                 <span class="section-title">Tipo de Efeito</span>
                 <label style="margin-bottom: 0.5rem; color: var(--text-muted);">Define o ícone e estilo do card</label>
@@ -672,7 +269,6 @@
                 </select>
             </div>
 
-            <!-- Preview -->
             <div class="section-box">
                 <span class="section-title">Preview</span>
                 <div class="preview-box">
@@ -680,688 +276,400 @@
                         <div class="approach-tag" id="preview-tag"></div>
                         <div class="card-header">
                             <div class="card-title-group">
-                                <i id="preview-type-icon" class="card-icon fa-solid fa-gear"></i> <!-- Ícone dinâmico -->
+                                <i id="preview-type-icon" class="card-icon fa-solid fa-gear"></i>
                                 <h2 class="card-title" id="preview-title">Nome do Efeito</h2>
                             </div>
                             <span class="card-cost" id="preview-cost">Vigor: 1</span>
                         </div>
                         <div class="card-body">
                             <p id="preview-desc-text">Descrição do efeito...</p>
-                            
-                            <!-- Container para Efeitos Secundários no Card -->
                             <div id="preview-secondary-effects" class="card-section-block" style="display: none;">
                                 <span class="card-section-title" style="color: var(--color-offensive)">Efeitos Secundários:</span>
                                 <span id="preview-secondary-list" style="color: var(--text-main)"></span>
                             </div>
-
-                            <!-- Container para Mitigação no Card -->
                             <div id="preview-mitigations" class="card-section-block" style="display: none; border-color: var(--color-mitigation);">
                                 <span class="card-section-title" style="color: var(--color-mitigation)">Mitigação:</span>
                                 <span id="preview-mitigation-list" style="color: var(--text-main)"></span>
                             </div>
-
                         </div>
                         <div class="card-footer" id="preview-footer" style="display:none;"></div>
                     </div>
                 </div>
+                
+                <!-- CAMPO AUTOR -->
+                <div style="margin-top: 1.5rem;">
+                    <label>Autor da Criação</label>
+                    <input type="text" id="inp-author" placeholder="Seu nome para crédito" style="border-color: var(--accent-silver);">
+                </div>
+
                 <div class="actions-row">
                     <button class="btn-action btn-red" onclick="saveAsTxt()"><i class="fa-solid fa-file-lines"></i> Salvar TXT</button>
                     <button class="btn-action btn-green" onclick="saveAsPng()"><i class="fa-solid fa-image"></i> Salvar PNG</button>
+                    <button class="btn-action btn-send-acervo" onclick="sendToAcervo()"><i class="fa-solid fa-share-from-square"></i> Enviar Solicitação</button>
                 </div>
             </div>
-
         </div>
 
         <!-- Coluna Direita: Instruções -->
         <div class="instructions-column" id="instructions-panel">
-            <button class="toggle-btn" style="position: absolute; top: 10px; right: 10px;" onclick="toggleInstructions()">
-                <i class="fa-solid fa-compress"></i>
-            </button>
-            <div class="instructions-header">
-                <h2 class="font-gothic" style="margin:0; font-size: 1rem;">Regras de Criação</h2>
-            </div>
+            <button class="toggle-btn" style="position: absolute; top: 10px; right: 10px;" onclick="toggleInstructions()"><i class="fa-solid fa-compress"></i></button>
+            <div class="instructions-header"><h2 class="font-gothic" style="margin:0; font-size: 1rem;">Regras de Criação</h2></div>
             <div class="instructions-content">
                 <h3>Custo Base: <span id="base-cost-display">1 Vigor</span></h3>
-                
-                <h3>1. Abordagem (Visual)</h3>
-                <ul>
-                    <li>Azul (D), Vermelho (O), Verde (E). Sem custo.</li>
-                </ul>
-
-                <h3>2. Efeito Principal</h3>
-                <ul>
-                    <li>Bônus/Ônus principal: Sem custo.</li>
-                    <li><b>Dano:</b> Apenas Dano ao Vigor permitido aqui. Até 2 é grátis. <b style="color: var(--color-offensive);">+1 Custo</b> para cada 2 de dano acima de 2.</li>
-                    <li><b>Condição:</b> Custo extra de <b style="color: var(--color-offensive);">+2</b>.</li>
-                </ul>
-
-                <h3>3. Efeitos Secundários</h3>
-                <ul>
-                    <li><b style="color: var(--color-offensive);">+1 Custo</b> para cada Bônus ou Ônus adicional.</li>
-                </ul>
-
-                <h3>4. Área de Efeito</h3>
-                <ul>
-                    <li>Alvo Único (até 9m): Sem custo.</li>
-                    <li><b>Área Especial:</b> <b style="color: var(--color-offensive);">+1 Custo</b> base.</li>
-                    <li><b>Esfera/Quadrado:</b> Base 1.5m tamanho e 9m alcance. +1 custo/1.5m extra.</li>
-                    <li><b>Linha/Cone:</b> Base 4.5m compr. x 1.5m (linha) ou 4.5m (cone). +1 custo/1.5m extra.</li>
-                    <li><b>Pilar:</b> Base 1.5m raio x 3m altura. +1 custo/1.5m extra.</li>
-                </ul>
-
-                <h3>5. Mitigação</h3>
-                <ul>
-                    <li><b style="color: var(--color-evasive);">-1 Custo</b> para cada forma de resistir (teste, pagar vigor, receber ônus, receber dano).</li>
-                    <li><b>Dano Estresse:</b> Permitido APENAS aqui (Máx 1).</li>
-                </ul>
-                
-                <div class="disclaimer-box">
-                    AVISO: Todo efeito especial criado aqui depende da aprovação do Narrador / Mestre para ser utilizado em jogo.
-                </div>
-
+                <h3>1. Abordagem</h3><ul><li>Azul (D), Vermelho (O), Verde (E). Sem custo.</li></ul>
+                <h3>2. Efeito Principal</h3><ul><li>Bônus/Ônus principal: Sem custo.</li><li><b>Dano:</b> Até 2 é grátis. <b style="color: var(--color-offensive);">+1 Custo</b> para cada 2 acima de 2.</li><li><b>Condição:</b> <b style="color: var(--color-offensive);">+2 Custo</b>.</li></ul>
+                <h3>3. Efeitos Secundários</h3><ul><li><b style="color: var(--color-offensive);">+1 Custo</b> por item.</li></ul>
+                <h3>4. Área</h3><ul><li>Alvo Único: Sem custo.</li><li><b>Área Especial:</b> <b style="color: var(--color-offensive);">+1 Custo</b> base.</li><li>+1 custo/1.5m extra nas dimensões.</li></ul>
+                <h3>5. Mitigação</h3><ul><li><b style="color: var(--color-evasive);">-1 Custo</b> por forma de resistir.</li></ul>
+                <div class="disclaimer-box">AVISO: Todo efeito especial criado aqui depende da aprovação do Narrador.</div>
             </div>
             <div class="minimized-text">REGRAS</div>
             <button class="maximize-btn" onclick="toggleInstructions()" style="display: none;"></button>
         </div>
-
     </div>
     
-    <!-- MODAL DE SELEÇÃO DE EFEITO SECUNDÁRIO -->
+    <!-- MODALS -->
     <div id="secondary-effect-modal" class="modal-overlay">
         <div class="modal-content">
-            <h3 class="font-gothic" style="border-bottom: 1px solid #444; padding-bottom: 5px;">Adicionar Efeito Secundário</h3>
-            <p style="font-size: 0.9rem; color: var(--color-mitigation); margin-top: 10px;">Custo: +1 Vigor. Qual efeito será adicionado?</p>
-            
+            <h3 class="font-gothic">Adicionar Efeito Secundário</h3>
+            <p style="font-size: 0.9rem; color: var(--color-mitigation); margin-top: 10px;">Custo: +1 Vigor.</p>
             <div class="dropdown-container" style="margin-top: 10px;">
-                <button class="dropdown-btn" id="btn-sec-effect-select" onclick="toggleDropdown('sec-effect-list')">Selecione o Bônus/Ônus...</button>
-                <div id="sec-effect-list" class="dropdown-menu">
-                    <!-- Preenchido via JS -->
-                </div>
+                <button class="dropdown-btn" id="btn-sec-effect-select" onclick="toggleDropdown('sec-effect-list')">Selecione...</button>
+                <div id="sec-effect-list" class="dropdown-menu"></div>
             </div>
-
-            <div class="modal-buttons">
-                <button onclick="closeSecondaryEffectModal()">Cancelar</button>
-                <button class="confirm" onclick="confirmSecondaryEffect()">Confirmar</button>
-            </div>
+            <div class="modal-buttons"><button onclick="closeSecondaryEffectModal()">Cancelar</button><button class="confirm" onclick="confirmSecondaryEffect()">Confirmar</button></div>
         </div>
     </div>
     
-    <!-- MODAL DE MITIGAÇÃO -->
     <div id="mitigation-modal" class="modal-overlay">
         <div class="modal-content">
-            <h3 class="font-gothic" style="border-bottom: 1px solid #444; padding-bottom: 5px;">Adicionar Mitigação</h3>
-            <p style="font-size: 0.9rem; color: var(--color-mitigation); margin-top: 10px;">Custo: -1 Vigor. Qual forma de resistência será aplicada?</p>
-            
+            <h3 class="font-gothic">Adicionar Mitigação</h3>
+            <p style="font-size: 0.9rem; color: var(--color-mitigation); margin-top: 10px;">Custo: -1 Vigor.</p>
             <select id="mitigation-type-select" onchange="toggleMitigationDetailInput()" style="width: 100%; margin-top: 10px; padding: 10px; background-color: #111; border: 1px solid #444; color: white;">
-                <option value="teste_atributo">Teste de Atributo</option>
-                <option value="pagar_vigor">Pagar X de Vigor</option>
-                <option value="receber_onus">Receber Ônus</option>
-                <option value="receber_dano">Receber Dano (Vigor ou Estresse)</option>
+                <option value="teste_atributo">Teste de Atributo</option><option value="pagar_vigor">Pagar X de Vigor</option><option value="receber_onus">Receber Ônus</option><option value="receber_dano">Receber Dano</option>
             </select>
-            
-            <!-- Campo de input de detalhe padrão (visível inicialmente) -->
-            <input type="text" id="mitigation-detail-input" placeholder="Detalhes (Ex: Vontade, 3 Vigor, 1 Estresse)" style="margin-top: 10px;">
-
-            <!-- Dropdown de Ônus (oculto inicialmente) -->
-            <select id="mitigation-onus-select" style="width: 100%; margin-top: 10px; padding: 10px; background-color: #111; border: 1px solid #444; color: white; display: none;">
-                <!-- Preenchido via JS com a lista de Ônus -->
-            </select>
-
-            <div class="modal-buttons">
-                <button onclick="closeMitigationModal()">Cancelar</button>
-                <button class="confirm" onclick="confirmMitigation()">Confirmar</button>
-            </div>
+            <input type="text" id="mitigation-detail-input" placeholder="Detalhes" style="margin-top: 10px;">
+            <select id="mitigation-onus-select" style="width: 100%; margin-top: 10px; padding: 10px; background-color: #111; border: 1px solid #444; color: white; display: none;"></select>
+            <div class="modal-buttons"><button onclick="closeMitigationModal()">Cancelar</button><button class="confirm" onclick="confirmMitigation()">Confirmar</button></div>
         </div>
     </div>
 
+    <!-- FIREBASE INTEGRATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC0OIN2Q0-4fBAlxMmrJ01_X7wtS4j5yWs",
+            authDomain: "site-estorias.firebaseapp.com",
+            projectId: "site-estorias",
+            storageBucket: "site-estorias.firebasestorage.app",
+            messagingSenderId: "638249584272",
+            appId: "1:638249584272:web:042099dcd5ad00ffb13a15"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const statusEl = document.getElementById('connStatus');
+
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try { await signInWithCustomToken(auth, __initial_auth_token); } 
+                    catch (e) { await signInAnonymously(auth); }
+                } else { await signInAnonymously(auth); }
+            } catch (error) { console.error("Erro Auth:", error); statusEl.innerText = "Offline"; }
+        };
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                statusEl.innerText = "Online"; statusEl.classList.add('online');
+                window.db = db; 
+                // Referencia a coleção de solicitações
+                window.db_collection = collection(db, "acervo_solicitacoes"); 
+                window.db_add = addDoc;
+            } else { statusEl.innerText = "Offline"; }
+        });
+    </script>
+
     <script>
-        // --- DADOS ---
         const effectsData = [
-            { name: "Protegido (x)", type: "Bônus", desc: "Reduz dano recebido." },
-            { name: "Vantagem", type: "Bônus", desc: "+2 em teste ou ação extra." },
-            { name: "Inspirado", type: "Bônus", desc: "+1 Criatividade." },
-            { name: "Focado", type: "Bônus", desc: "+1 Discernimento." },
-            { name: "Fortalecido", type: "Bônus", desc: "+1 Força/Fortitude." },
-            { name: "Impetuoso", type: "Bônus", desc: "Turno extra." },
-            { name: "Agilizado", type: "Bônus", desc: "+1 Destreza." },
-            { name: "Preparado", type: "Bônus", desc: "Evita próximo Ônus." },
-            { name: "Revitalizado", type: "Bônus", desc: "Recupera Vigor/turno." },
-            { name: "Motivado", type: "Bônus", desc: "+1 Vontade." },
-            { name: "Destemido", type: "Bônus", desc: "+1 Ordem Conflito." },
-            { name: "Desmotivado", type: "Ônus", desc: "-2 Vontade." },
-            { name: "Enfraquecido", type: "Ônus", desc: "-1 Força." },
-            { name: "Lento", type: "Ônus", desc: "-3m Deslocamento." },
-            { name: "Desvantagem", type: "Ônus", desc: "-2 teste, 1 ação/turno." },
-            { name: "Em apuros", type: "Ônus", desc: "1 dano/turno." },
-            { name: "Preso", type: "Ônus", desc: "Deslocamento 0." },
-            { name: "Cansado", type: "Ônus", desc: "-1 em todos atributos." },
-            { name: "Desorientado", type: "Ônus", desc: "-1 Discernimento." },
-            { name: "Assustado", type: "Ônus", desc: "-2 Criatividade." },
-            { name: "Ferido", type: "Ônus", desc: "-2 Fortitude." },
-            { name: "Baixa Visibilidade", type: "Ônus", desc: "-2 testes visão." },
+            { name: "Protegido (x)", type: "Bônus", desc: "Reduz dano recebido." }, { name: "Vantagem", type: "Bônus", desc: "+2 em teste ou ação extra." },
+            { name: "Inspirado", type: "Bônus", desc: "+1 Criatividade." }, { name: "Focado", type: "Bônus", desc: "+1 Discernimento." },
+            { name: "Fortalecido", type: "Bônus", desc: "+1 Força/Fortitude." }, { name: "Impetuoso", type: "Bônus", desc: "Turno extra." },
+            { name: "Agilizado", type: "Bônus", desc: "+1 Destreza." }, { name: "Preparado", type: "Bônus", desc: "Evita próximo Ônus." },
+            { name: "Revitalizado", type: "Bônus", desc: "Recupera Vigor/turno." }, { name: "Motivado", type: "Bônus", desc: "+1 Vontade." },
+            { name: "Destemido", type: "Bônus", desc: "+1 Ordem Conflito." }, { name: "Desmotivado", type: "Ônus", desc: "-2 Vontade." },
+            { name: "Enfraquecido", type: "Ônus", desc: "-1 Força." }, { name: "Lento", type: "Ônus", desc: "-3m Deslocamento." },
+            { name: "Desvantagem", type: "Ônus", desc: "-2 teste, 1 ação/turno." }, { name: "Em apuros", type: "Ônus", desc: "1 dano/turno." },
+            { name: "Preso", type: "Ônus", desc: "Deslocamento 0." }, { name: "Cansado", type: "Ônus", desc: "-1 em todos atributos." },
+            { name: "Desorientado", type: "Ônus", desc: "-1 Discernimento." }, { name: "Assustado", type: "Ônus", desc: "-2 Criatividade." },
+            { name: "Ferido", type: "Ônus", desc: "-2 Fortitude." }, { name: "Baixa Visibilidade", type: "Ônus", desc: "-2 testes visão." },
             { name: "Vulnerável (x)", type: "Ônus", desc: "Aumenta dano recebido." }
         ];
+        const onusList = ["Desmotivado", "Enfraquecido", "Lento", "Desvantagem", "Em apuros", "Preso", "Cansado", "Desorientado", "Assustado", "Ferido", "Baixa Visibilidade", "Vulnerável (x)"];
 
-        // Ônus extraídos do b&o.pdf
-        const onusList = [
-            "Desmotivado", "Enfraquecido", "Lento", "Desvantagem", "Em apuros", 
-            "Preso", "Cansado", "Desorientado", "Assustado", "Ferido", 
-            "Baixa Visibilidade", "Vulnerável (x)"
-        ];
+        let selectedMainEffect = ""; let secondaryEffects = []; let mitigationDetails = []; let currentModalTarget = null; let selectedSecEffect = ""; let currentCost = 1;
 
-
-        let selectedMainEffect = "";
-        let secondaryEffects = [];
-        let mitigationDetails = [];
-        let currentModalTarget = null;
-        let selectedSecEffect = "";
-        let currentCost = 1; // Variável global para armazenar o custo
-
-        // --- FUNÇÕES AUXILIARES ---
-        
-        function toggleInstructions() {
-            const panel = document.getElementById('instructions-panel');
-            const maxBtn = panel.querySelector('.maximize-btn');
-            panel.classList.toggle('minimized');
-            if(panel.classList.contains('minimized')) maxBtn.style.display = 'block';
-            else maxBtn.style.display = 'none';
-        }
-
-        function toggleDropdown(id) {
-            const menu = document.getElementById(id);
-            menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
-        }
-        
-        // Controla visibilidade dos inputs específicos de área
+        function toggleInstructions() { const p = document.getElementById('instructions-panel'); p.classList.toggle('minimized'); p.querySelector('.maximize-btn').style.display = p.classList.contains('minimized') ? 'block' : 'none'; }
+        function toggleDropdown(id) { const m = document.getElementById(id); m.style.display = m.style.display === 'block' ? 'none' : 'block'; }
         function toggleAreaSpecifics() {
-            const shape = document.getElementById('area-shape').value;
-            
-            document.getElementById('std-shape-inputs').style.display = 'none';
-            document.getElementById('line-inputs').style.display = 'none';
-            document.getElementById('pillar-inputs').style.display = 'none';
-            document.getElementById('cone-inputs').style.display = 'none';
-
-            if (shape === 'linha') {
-                document.getElementById('line-inputs').style.display = 'block';
-            } else if (shape === 'pilar') {
-                document.getElementById('pillar-inputs').style.display = 'block';
-            } else if (shape === 'cone') {
-                document.getElementById('cone-inputs').style.display = 'block';
-            } else {
-                document.getElementById('std-shape-inputs').style.display = 'block';
-            }
+            const s = document.getElementById('area-shape').value;
+            ['std-shape','line','pillar','cone'].forEach(i => document.getElementById(i+'-inputs').style.display = 'none');
+            if(s==='linha') document.getElementById('line-inputs').style.display='block';
+            else if(s==='pilar') document.getElementById('pillar-inputs').style.display='block';
+            else if(s==='cone') document.getElementById('cone-inputs').style.display='block';
+            else document.getElementById('std-shape-inputs').style.display='block';
         }
         
         function changeValue(id, delta) {
             const input = document.getElementById(id);
             let val = parseFloat(input.value) || 0;
-            
-            // Validações para não ficar negativo
             if (val + delta < 0) return;
-
-            // Se for area inputs, não pode ser menor que a base
-            if (val + delta <= 0 && id !== 'input-damage') return; 
-
-            val += delta;
-            input.value = val.toFixed(1).replace('.0', ''); 
-            calculateCost();
+            if (val + delta <= 0 && id !== 'input-damage') return;
+            input.value = (val + delta).toFixed(1).replace('.0', ''); calculateCost();
         }
 
         function populateEffects() {
-            const list = document.getElementById('effect-list');
-            const secList = document.getElementById('sec-effect-list');
-            list.innerHTML = '';
-            secList.innerHTML = '';
-
+            const list = document.getElementById('effect-list'); const secList = document.getElementById('sec-effect-list');
+            list.innerHTML = ''; secList.innerHTML = '';
             effectsData.forEach(eff => {
-                const itemHtml = `<strong>${eff.name}</strong> <span class="desc">${eff.desc}</span>`;
-                
-                // Lista Principal
-                const divMain = document.createElement('div');
-                divMain.className = 'dropdown-item';
-                divMain.innerHTML = itemHtml;
-                divMain.onclick = (e) => {
-                    e.stopPropagation();
-                    selectedMainEffect = eff.name;
-                    document.getElementById('btn-main-effect').textContent = selectedMainEffect;
-                    toggleDropdown('effect-list');
-                    calculateCost();
-                };
-                list.appendChild(divMain);
-                
-                // Lista Secundária (para o Modal)
-                const divSec = document.createElement('div');
-                divSec.className = 'dropdown-item';
-                divSec.innerHTML = itemHtml;
-                divSec.onclick = (e) => {
-                    e.stopPropagation();
-                    selectedSecEffect = eff.name;
-                    document.getElementById('btn-sec-effect-select').textContent = eff.name;
-                    toggleDropdown('sec-effect-list');
-                };
-                secList.appendChild(divSec);
+                const html = `<strong>${eff.name}</strong> <span class="desc">${eff.desc}</span>`;
+                const d1 = document.createElement('div'); d1.className='dropdown-item'; d1.innerHTML=html;
+                d1.onclick=(e)=>{ e.stopPropagation(); selectedMainEffect=eff.name; document.getElementById('btn-main-effect').textContent=eff.name; toggleDropdown('effect-list'); calculateCost(); };
+                list.appendChild(d1);
+                const d2 = document.createElement('div'); d2.className='dropdown-item'; d2.innerHTML=html;
+                d2.onclick=(e)=>{ e.stopPropagation(); selectedSecEffect=eff.name; document.getElementById('btn-sec-effect-select').textContent=eff.name; toggleDropdown('sec-effect-list'); };
+                secList.appendChild(d2);
             });
-            
-            // Popula o Dropdown de Ônus para Mitigação
-            const onusSelect = document.getElementById('mitigation-onus-select');
-            onusSelect.innerHTML = '<option value="">Selecione o Ônus...</option>';
-            onusList.forEach(onus => {
-                const option = document.createElement('option');
-                option.value = onus;
-                option.textContent = onus;
-                onusSelect.appendChild(option);
-            });
+            const onusSel = document.getElementById('mitigation-onus-select');
+            onusList.forEach(o => { const op = document.createElement('option'); op.value=o; op.textContent=o; onusSel.appendChild(op); });
         }
-        
-        // --- LÓGICA DE CUSTO ---
 
         function calculateCost() {
-            let cost = 1; // Custo Base (Mínimo 1 Vigor)
-
-            // 2. Efeito Principal
-            const damage = parseInt(document.getElementById('input-damage').value) || 0;
-            const isCondition = document.getElementById('input-condition').checked;
-
-            // Custo de Dano (Agora SEMPRE VIGOR)
-            if (damage > 2) {
-                cost += Math.ceil((damage - 2) / 2); // +1 custo para cada 2 de dano acima de 2
-            }
-            // Custo de Condição
-            if (isCondition) {
-                cost += 2;
-            }
-
-            // 3. Efeitos Secundários
-            const extrasCount = secondaryEffects.length;
-            cost += extrasCount; // +1 custo por efeito extra
-
-            // 4. Área de Efeito
+            let cost = 1;
+            const dmg = parseInt(document.getElementById('input-damage').value)||0;
+            if(dmg>2) cost += Math.ceil((dmg-2)/2);
+            if(document.getElementById('input-condition').checked) cost+=2;
+            cost += secondaryEffects.length;
+            
+            let areaDesc = "Alcance: Alvo Único (até 9m)";
             const areaType = document.querySelector('input[name="area-type"]:checked').value;
-            
-            // Variáveis para descrição
-            let descArea = "";
-
-            if (areaType === 'special') {
-                cost += 1; // +1 Custo base por ser Área Especial
-                
+            if(areaType==='special') {
+                cost+=1; document.getElementById('area-details').style.display='block';
                 const shape = document.getElementById('area-shape').value;
-                
-                // Cálculo Baseado nas Formas Específicas
-                if (shape === 'linha') {
-                    const len = parseFloat(document.getElementById('input-line-length').value) || 4.5;
-                    const thick = parseFloat(document.getElementById('input-line-thickness').value) || 1.5;
-                    
-                    // Base: 4.5m e 1.5m. +1 para cada 1.5m extra.
-                    if (len > 4.5) cost += Math.ceil((len - 4.5) / 1.5);
-                    if (thick > 1.5) cost += Math.ceil((thick - 1.5) / 1.5);
-                    
-                    descArea = `Área: LINHA (${len}m x ${thick}m)`;
-
-                } else if (shape === 'cone') {
-                    const len = parseFloat(document.getElementById('input-cone-length').value) || 4.5;
-                    const width = parseFloat(document.getElementById('input-cone-width').value) || 4.5;
-                    
-                    // Base: 4.5m e 4.5m. +1 para cada 1.5m extra.
-                    if (len > 4.5) cost += Math.ceil((len - 4.5) / 1.5);
-                    if (width > 4.5) cost += Math.ceil((width - 4.5) / 1.5);
-                    
-                    descArea = `Área: CONE (${len}m x ${width}m)`;
-
-                } else if (shape === 'pilar') {
-                    const radius = parseFloat(document.getElementById('input-pillar-radius').value) || 1.5;
-                    const height = parseFloat(document.getElementById('input-pillar-height').value) || 3;
-                    
-                    // Base: 1.5m raio e 3m altura. +1 para cada 1.5m extra.
-                    if (radius > 1.5) cost += Math.ceil((radius - 1.5) / 1.5);
-                    if (height > 3) cost += Math.ceil((height - 3) / 1.5);
-
-                    descArea = `Área: PILAR (${height}m alt x ${radius}m raio)`;
-
+                if(shape==='linha') {
+                    const l = parseFloat(document.getElementById('input-line-length').value)||4.5, t = parseFloat(document.getElementById('input-line-thickness').value)||1.5;
+                    if(l>4.5) cost += Math.ceil((l-4.5)/1.5); if(t>1.5) cost += Math.ceil((t-1.5)/1.5);
+                    areaDesc = `Área: LINHA (${l}m x ${t}m)`;
+                } else if(shape==='cone') {
+                    const l = parseFloat(document.getElementById('input-cone-length').value)||4.5, w = parseFloat(document.getElementById('input-cone-width').value)||4.5;
+                    if(l>4.5) cost += Math.ceil((l-4.5)/1.5); if(w>4.5) cost += Math.ceil((w-4.5)/1.5);
+                    areaDesc = `Área: CONE (${l}m x ${w}m)`;
+                } else if(shape==='pilar') {
+                    const r = parseFloat(document.getElementById('input-pillar-radius').value)||1.5, h = parseFloat(document.getElementById('input-pillar-height').value)||3;
+                    if(r>1.5) cost += Math.ceil((r-1.5)/1.5); if(h>3) cost += Math.ceil((h-3)/1.5);
+                    areaDesc = `Área: PILAR (${h}m alt x ${r}m raio)`;
                 } else {
-                    // Esfera, Quadrado
-                    const size = parseFloat(document.getElementById('input-std-size').value) || 1.5;
-                    const range = parseFloat(document.getElementById('input-std-range').value) || 9;
-                    
-                    // Base: 1.5m tamanho, 9m alcance. +1 para cada 1.5m extra.
-                    if (size > 1.5) cost += Math.ceil((size - 1.5) / 1.5);
-                    if (range > 9) cost += Math.ceil((range - 9) / 1.5);
-
-                    descArea = `Área: ${shape.toUpperCase()} (${size}m) a ${range}m`;
+                    const s = parseFloat(document.getElementById('input-std-size').value)||1.5, r = parseFloat(document.getElementById('input-std-range').value)||9;
+                    if(s>1.5) cost += Math.ceil((s-1.5)/1.5); if(r>9) cost += Math.ceil((r-9)/1.5);
+                    areaDesc = `Área: ${shape.toUpperCase()} (${s}m) a ${r}m`;
                 }
+            } else { document.getElementById('area-details').style.display='none'; }
 
-                document.getElementById('area-details').style.display = 'block';
-            } else {
-                document.getElementById('area-details').style.display = 'none';
-                descArea = "Alcance: Alvo Único (até 9m)";
-            }
-            // Caso seja 'single', o custo é 0.
-
-            // 5. Mitigação
-            const mitigationCount = mitigationDetails.length;
-            cost -= mitigationCount; // -1 custo por forma de resistência
-
-            // APLICAÇÃO DO BÔNUS DE TÉCNICA ÚNICA
-            const effectType = document.getElementById('effect-type-select').value;
-            if (effectType === 'technique') {
-                cost -= 1;
-            }
-
-            if (cost < 1) cost = 1; // Mínimo sempre 1
+            cost -= mitigationDetails.length;
+            if(document.getElementById('effect-type-select').value==='technique') cost-=1;
+            if(cost<1) cost=1;
             
-            // Atualiza variável global e chama atualização visual
             currentCost = cost;
-            generateDescription(damage, descArea);
+            generateDescription(dmg, areaDesc);
             updatePreview();
         }
-        
-        // --- GERAÇÃO DE TEXTO E PREVIEW ---
 
-        function generateDescription(damage, descArea) {
-            let desc = "";
+        function generateDescription(dmg, areaDesc) {
+            let d = "";
+            if(selectedMainEffect) d += `<b>Efeito Principal:</b> Aplica ${selectedMainEffect}. `;
+            if(dmg>0) d += `Causa <b>${dmg}</b> de dano ao Vigor. `;
+            if(document.getElementById('input-condition').checked) d += `<b>Inflige uma Condição</b>. `;
             
-            // Texto para o campo final-desc
-            if (selectedMainEffect) {
-                 desc += `<b>Efeito Principal:</b> Aplica ${selectedMainEffect}. `;
-            }
-
-            // Dano e Condição
-            if (damage > 0) {
-                desc += `Causa <b>${damage}</b> de dano ao Vigor. `;
-            }
-            if (document.getElementById('input-condition').checked) {
-                desc += `<b>Inflige uma Condição</b>. `;
-            }
-            
-            // Atualiza os painéis
-            document.getElementById('final-desc').value = desc.trim();
+            document.getElementById('final-desc').value = d.trim();
             document.getElementById('list-secondary-effects').textContent = secondaryEffects.join(', ');
             document.getElementById('list-mitigations').textContent = mitigationDetails.join(' | ');
-
-            // Atualiza footer do Card com a área calculada
-            const footerEl = document.getElementById('preview-footer');
-            let footerText = descArea + ". ";
             
-            footerEl.innerHTML = footerText.trim();
-            footerEl.style.display = footerText.trim() ? 'block' : 'none';
+            const ft = document.getElementById('preview-footer');
+            ft.innerHTML = (areaDesc+". ").trim();
+            ft.style.display = ft.innerHTML ? 'block' : 'none';
         }
 
         function updatePreview() {
-            // Determina a cor baseada na Abordagem Atual
-            const approach = document.getElementById('input-approach').value;
-            const color = approach === 'O' ? 'var(--color-offensive)' : 
-                          (approach === 'D' ? 'var(--color-defensive)' : 
-                          (approach === 'E' ? 'var(--color-evasive)' : 'var(--accent-silver)'));
-
-            // Atualiza Título, Tag e Cor do Custo
+            const app = document.getElementById('input-approach').value;
+            const color = app==='O'?'var(--color-offensive)':(app==='D'?'var(--color-defensive)':(app==='E'?'var(--color-evasive)':'var(--accent-silver)'));
+            
             document.getElementById('preview-title').textContent = document.getElementById('input-title').value || "Nome do Efeito";
             document.getElementById('preview-title').style.color = color;
-            
-            const tag = document.getElementById('preview-tag');
-            tag.style.backgroundColor = color;
-
+            document.getElementById('preview-tag').style.backgroundColor = color;
             document.getElementById('preview-cost').textContent = `Vigor: ${currentCost}`;
             
-            // Atualiza Ícone e Estilo do Card baseado no Tipo de Efeito
-            const effectType = document.getElementById('effect-type-select').value;
-            const cardRender = document.getElementById('card-render');
-            const typeIcon = document.getElementById('preview-type-icon');
+            const type = document.getElementById('effect-type-select').value;
+            const cr = document.getElementById('card-render'); const ic = document.getElementById('preview-type-icon');
+            cr.classList.remove('type-magic','type-technique');
+            if(type==='magic') { cr.classList.add('type-magic'); ic.className='card-icon fa-solid fa-star'; }
+            else if(type==='technique') { cr.classList.add('type-technique'); ic.className='card-icon fa-solid fa-person'; }
+            else { ic.className='card-icon fa-solid fa-gear'; }
 
-            // Reset classes
-            cardRender.classList.remove('type-magic', 'type-technique');
-
-            if (effectType === 'magic') {
-                cardRender.classList.add('type-magic');
-                typeIcon.className = 'card-icon fa-solid fa-star';
-            } else if (effectType === 'technique') {
-                cardRender.classList.add('type-technique');
-                typeIcon.className = 'card-icon fa-solid fa-person';
-            } else {
-                // Item (Padrão/Quadrado)
-                typeIcon.className = 'card-icon fa-solid fa-gear';
-            }
-            
-            // Atualiza descrição do Card com o texto final (lendo diretamente do textarea, permitindo edições manuais)
             document.getElementById('preview-desc-text').innerHTML = document.getElementById('final-desc').value;
             
-            // Atualiza a Seção de Efeitos Secundários no Card
-            const secContainer = document.getElementById('preview-secondary-effects');
-            const secList = document.getElementById('preview-secondary-list');
-            
-            if (secondaryEffects.length > 0) {
-                secContainer.style.display = 'block';
-                secList.textContent = secondaryEffects.join(', ');
-            } else {
-                secContainer.style.display = 'none';
-            }
+            const sc = document.getElementById('preview-secondary-effects');
+            if(secondaryEffects.length>0) { sc.style.display='block'; document.getElementById('preview-secondary-list').textContent=secondaryEffects.join(', '); }
+            else sc.style.display='none';
 
-             // Atualiza a Seção de Mitigação no Card
-            const mitContainer = document.getElementById('preview-mitigations');
-            const mitList = document.getElementById('preview-mitigation-list');
-            
-            if (mitigationDetails.length > 0) {
-                mitContainer.style.display = 'block';
-                mitList.textContent = mitigationDetails.join(' | ');
-            } else {
-                mitContainer.style.display = 'none';
-            }
+            const mc = document.getElementById('preview-mitigations');
+            if(mitigationDetails.length>0) { mc.style.display='block'; document.getElementById('preview-mitigation-list').textContent=mitigationDetails.join(' | '); }
+            else mc.style.display='none';
         }
 
-        // --- LÓGICA DO MODAL SECUNDÁRIO ---
-        
-        function openSecondaryEffectModal(targetId, delta) {
-             // Lógica de remoção
-            if (delta === -1) {
-                const currentCount = secondaryEffects.length;
-                if (currentCount > 0) {
-                    secondaryEffects.pop();
-                    document.getElementById('input-extra-effects').value = currentCount - 1;
-                    calculateCost();
-                }
-                return;
-            }
-
-            // Lógica de adição
-            currentModalTarget = targetId;
-            document.getElementById('secondary-effect-modal').style.display = 'flex';
-            document.getElementById('btn-sec-effect-select').textContent = "Selecione o Bônus/Ônus...";
-            selectedSecEffect = "";
+        function openSecondaryEffectModal(tid, delta) {
+            if(delta===-1 && secondaryEffects.length>0) { secondaryEffects.pop(); document.getElementById('input-extra-effects').value=secondaryEffects.length; calculateCost(); return; }
+            currentModalTarget=tid; document.getElementById('secondary-effect-modal').style.display='flex'; selectedSecEffect="";
         }
+        function closeSecondaryEffectModal() { document.getElementById('secondary-effect-modal').style.display='none'; }
+        function confirmSecondaryEffect() { if(selectedSecEffect){ secondaryEffects.push(selectedSecEffect); document.getElementById('input-extra-effects').value=secondaryEffects.length; closeSecondaryEffectModal(); calculateCost(); } }
 
-        function closeSecondaryEffectModal() {
-            document.getElementById('secondary-effect-modal').style.display = 'none';
-        }
-
-        function confirmSecondaryEffect() {
-            if (selectedSecEffect) {
-                secondaryEffects.push(selectedSecEffect);
-                document.getElementById('input-extra-effects').value = secondaryEffects.length;
-                
-                closeSecondaryEffectModal();
-                calculateCost();
-            } else {
-                console.error("Erro: Por favor, selecione um Bônus ou Ônus.");
-            }
-        }
-
-        // --- LÓGICA DO MODAL MITIGAÇÃO ---
-        
         function toggleMitigationDetailInput() {
-            const type = document.getElementById('mitigation-type-select').value;
-            const detailInput = document.getElementById('mitigation-detail-input');
-            const onusSelect = document.getElementById('mitigation-onus-select');
-
-            if (type === 'receber_onus') {
-                detailInput.style.display = 'none';
-                onusSelect.style.display = 'block';
-            } else {
-                detailInput.style.display = 'block';
-                onusSelect.style.display = 'none';
-                detailInput.placeholder = (type === 'teste_atributo') ? 'Ex: Vontade' : 
-                                          (type === 'pagar_vigor') ? 'Ex: 3 Vigor' :
-                                          'Ex: 1 Estresse (Máx 1) ou 3 Vigor';
-            }
+            const t = document.getElementById('mitigation-type-select').value;
+            const di = document.getElementById('mitigation-detail-input'); const os = document.getElementById('mitigation-onus-select');
+            if(t==='receber_onus') { di.style.display='none'; os.style.display='block'; }
+            else { di.style.display='block'; os.style.display='none'; di.placeholder = t==='teste_atributo'?'Ex: Vontade':(t==='pagar_vigor'?'Ex: 3 Vigor':'Ex: 1 Estresse (Máx 1)'); }
         }
-
-        function openMitigationModal(targetId, delta) {
-            // Lógica de remoção
-            if (delta === -1) {
-                const currentCount = mitigationDetails.length;
-                if (currentCount > 0) {
-                    mitigationDetails.pop();
-                    document.getElementById('input-mitigation').value = currentCount - 1;
-                    calculateCost();
-                }
-                return; 
-            }
-
-            // Lógica de adição
-            currentModalTarget = targetId;
-            document.getElementById('mitigation-modal').style.display = 'flex';
-            
-            // Reseta a seleção e os campos de detalhe
-            document.getElementById('mitigation-type-select').value = 'teste_atributo';
-            document.getElementById('mitigation-detail-input').value = ""; 
-            
-            // Chama o toggle para configurar a visualização inicial correta
-            toggleMitigationDetailInput();
+        function openMitigationModal(tid, delta) {
+            if(delta===-1 && mitigationDetails.length>0) { mitigationDetails.pop(); document.getElementById('input-mitigation').value=mitigationDetails.length; calculateCost(); return; }
+            currentModalTarget=tid; document.getElementById('mitigation-modal').style.display='flex'; 
+            document.getElementById('mitigation-type-select').value='teste_atributo'; document.getElementById('mitigation-detail-input').value=""; toggleMitigationDetailInput();
         }
-
-        function closeMitigationModal() {
-            document.getElementById('mitigation-modal').style.display = 'none';
-        }
-
+        function closeMitigationModal() { document.getElementById('mitigation-modal').style.display='none'; }
         function confirmMitigation() {
-            const type = document.getElementById('mitigation-type-select').value;
-            const detailInput = document.getElementById('mitigation-detail-input');
-            const onusSelect = document.getElementById('mitigation-onus-select');
-
-            let detail = '';
+            const t = document.getElementById('mitigation-type-select').value;
+            const di = document.getElementById('mitigation-detail-input');
+            let det = t==='receber_onus' ? document.getElementById('mitigation-onus-select').value : di.value.trim();
             
-            if (type === 'receber_onus') {
-                detail = onusSelect.value;
-                if (!detail) {
-                    console.error("Erro: Por favor, selecione um Ônus na lista.");
-                    return;
-                }
-            } else {
-                detail = detailInput.value.trim();
-                if (!detail) {
-                    console.error("Erro: Por favor, preencha os detalhes da mitigação. O campo de detalhes não pode estar vazio.");
-                    return;
-                }
+            if(!det) { alert("Preencha os detalhes."); return; }
+            if(t==='receber_dano' && det.toLowerCase().includes('estresse')) {
+                const m = det.match(/\d+/); if(m && parseInt(m[0])>1) { alert("Máximo 1 Estresse."); return; }
             }
-
-            // VALIDAÇÃO DE ESTRESSE
-            if (type === 'receber_dano') {
-                const lowerDetail = detail.toLowerCase();
-                if (lowerDetail.includes('estresse')) {
-                    const numberMatch = lowerDetail.match(/\d+/);
-                    const val = numberMatch ? parseInt(numberMatch[0]) : 1; 
-                    
-                    if (val > 1) {
-                         console.error("Erro: Dano de Estresse na mitigação não pode ser maior que 1.");
-                         alert("ERRO: O Dano de Estresse na mitigação não pode ser maior que 1.");
-                         return;
-                    }
-                }
-            }
-
-            let mitigationText;
-            switch(type) {
-                case 'teste_atributo': mitigationText = `Teste de Atributo (${detail})`; break; 
-                case 'pagar_vigor': mitigationText = `Pagar Vigor (${detail})`; break; 
-                case 'receber_onus': mitigationText = `Receber Ônus (${detail})`; break; 
-                case 'receber_dano': mitigationText = `Receber Dano (${detail})`; break; 
-                default: return;
-            }
-
-            mitigationDetails.push(mitigationText);
-            document.getElementById('input-mitigation').value = mitigationDetails.length;
             
-            closeMitigationModal();
-            calculateCost();
+            const txt = t==='teste_atributo' ? `Teste de Atributo (${det})` : (t==='pagar_vigor' ? `Pagar Vigor (${det})` : (t==='receber_onus' ? `Receber Ônus (${det})` : `Receber Dano (${det})`));
+            mitigationDetails.push(txt); document.getElementById('input-mitigation').value=mitigationDetails.length;
+            closeMitigationModal(); calculateCost();
         }
-
-        // --- EXPORTAÇÃO ---
 
         function saveAsTxt() {
-            const title = document.getElementById('input-title').value || "efeito";
-            const cost = currentCost; // Usa a variável global
-            const desc = document.getElementById('final-desc').value;
-            const footer = document.getElementById('preview-footer').textContent;
-            
-            const secEffects = secondaryEffects.length > 0 ? `\nEfeitos Secundários: ${secondaryEffects.join(', ')}` : '';
-            const mitigations = mitigationDetails.length > 0 ? `\nMitigação: ${mitigationDetails.join(' | ')}` : '';
-
-            const content = `--- EFEITO: ${title} ---\n` +
-                            `Custo: ${cost}\n` +
-                            `Descrição:\n${desc}` +
-                            `${secEffects}` +
-                            `${mitigations}\n` +
-                            `\nDetalhes:\n${footer}`;
-            
-            const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = `${title}.txt`;
-            a.click();
+            const t = document.getElementById('input-title').value||"efeito";
+            const content = `--- ${t} ---\nCusto: ${currentCost}\nDescrição:\n${document.getElementById('final-desc').value}\n` +
+                            (secondaryEffects.length>0 ? `Efeitos Secundários: ${secondaryEffects.join(', ')}\n` : '') +
+                            (mitigationDetails.length>0 ? `Mitigação: ${mitigationDetails.join(' | ')}\n` : '') +
+                            `\nDetalhes:\n${document.getElementById('preview-footer').textContent}`;
+            const blob = new Blob([content], {type:"text/plain;charset=utf-8"});
+            const a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`${t}.txt`; a.click();
         }
-
         function saveAsPng() {
-            html2canvas(document.getElementById('card-render'), { backgroundColor: null, scale: 2 }).then(canvas => {
-                const a = document.createElement("a");
-                a.href = canvas.toDataURL("image/png");
-                a.download = `${document.getElementById('input-title').value || 'efeito'}.png`;
-                a.click();
+            html2canvas(document.getElementById('card-render'), {backgroundColor:null, scale:2}).then(c => {
+                const a = document.createElement("a"); a.href=c.toDataURL("image/png"); a.download=`${document.getElementById('input-title').value||'efeito'}.png`; a.click();
             });
         }
 
-        // --- INICIALIZAÇÃO ---
-        
+        // --- FUNÇÃO DE ENVIO AO GESTOR (ACERVO) ---
+        async function sendToAcervo() {
+            if(!window.db) { alert("Sem conexão com o Grimório (Firebase)."); return; }
+            
+            const title = document.getElementById('input-title').value;
+            if(!title) { alert("Dê um nome ao efeito."); return; }
+            const author = document.getElementById('inp-author').value;
+
+            const app = document.getElementById('input-approach').value;
+            // Pegamos a cor computada atual do título para usar no inline-style
+            const colorTitle = document.getElementById('preview-title').style.color || '#C0C0C0';
+            const colorSec = 'var(--color-offensive)'; // Para simplificar no inline, ideal seria hex
+            const colorMit = 'var(--color-mitigation)';
+
+            // Constrói o HTML visual (inline styles para portabilidade)
+            // Nota: Usamos cores HEX aproximadas para garantir que funcione no Gestor se as vars CSS não estiverem lá.
+            // Mas como o gestor tem o CSS gótico, classes funcionariam, mas inline é mais seguro para o modal.
+            
+            const secHtml = secondaryEffects.length > 0 ? 
+                `<div style="margin-top:8px; padding-top:8px; border-top:1px solid #333; font-size:0.9rem;">
+                    <span style="font-family:'Cinzel',serif; font-weight:bold; display:block; margin-bottom:4px; font-size:0.85rem; text-transform:uppercase; color:#ef4444;">Efeitos Secundários:</span>
+                    <span style="color:#d1d5db;">${secondaryEffects.join(', ')}</span>
+                 </div>` : '';
+
+            const mitHtml = mitigationDetails.length > 0 ? 
+                `<div style="margin-top:8px; padding-top:8px; border-top:1px solid #333; font-size:0.9rem; border-color:#daa520;">
+                    <span style="font-family:'Cinzel',serif; font-weight:bold; display:block; margin-bottom:4px; font-size:0.85rem; text-transform:uppercase; color:#daa520;">Mitigação:</span>
+                    <span style="color:#d1d5db;">${mitigationDetails.join(' | ')}</span>
+                 </div>` : '';
+
+            const footerText = document.getElementById('preview-footer').textContent;
+            const typeIconClass = document.getElementById('preview-type-icon').className; // ex: 'card-icon fa-solid fa-star'
+            // Mapeia classe de ícone para HTML de ícone se possível, ou usa texto
+            // No gestor, o font-awesome está disponível, então podemos usar o <i>
+            
+            const fullHtml = `
+                <div style="width:100%; max-width:400px; background-color:#1a1a1a; border:2px solid #444; border-radius:8px; overflow:hidden; position:relative; margin:0 auto;">
+                    <div style="background:linear-gradient(to right, #222, #000); padding:15px; border-bottom:2px solid ${colorTitle}; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <i class="${typeIconClass}" style="color:#C0C0C0; font-size:1.2rem;"></i>
+                            <h2 style="font-family:'Cinzel',serif; font-weight:900; color:${colorTitle}; font-size:1.2rem; text-shadow:0 2px 2px black; margin:0;">${title}</h2>
+                        </div>
+                        <span style="font-family:'Cinzel',serif; color:#9ca3af; font-weight:bold; border:1px solid #333; padding:2px 8px; border-radius:4px; font-size:0.9rem;">Vigor: ${currentCost}</span>
+                    </div>
+                    <div style="padding:15px; color:#d1d5db; font-size:1rem; line-height:1.6;">
+                        <p style="margin:0;">${document.getElementById('final-desc').value}</p>
+                        ${secHtml}
+                        ${mitHtml}
+                    </div>
+                    <div style="background-color:#111; padding:10px 15px; border-top:1px solid #333; color:#9ca3af; font-size:0.9rem; font-style:italic;">
+                        ${footerText}
+                    </div>
+                    ${author ? `<div style="text-align:right; padding:5px 15px; font-size:0.7rem; color:#666;">Criado por: ${author}</div>` : ''}
+                </div>
+            `;
+
+            const typeTag = document.getElementById('effect-type-select').value === 'magic' ? 'Magia' : (document.getElementById('effect-type-select').value === 'technique' ? 'Técnica' : 'Item');
+
+            const itemToSend = {
+                type: 'efeitos', // Categoria para o Gestor/Acervo
+                title: title,
+                tag: typeTag,
+                desc: `Custo ${currentCost}. ${document.getElementById('final-desc').value.substring(0, 50)}...`,
+                fullText: fullHtml, // O HTML visual do card
+                rawJson: JSON.stringify({ // Dados crus para futura edição se implementarmos
+                    title, cost: currentCost, approach: app, 
+                    main: selectedMainEffect, damage: document.getElementById('input-damage').value,
+                    secondary: secondaryEffects, mitigation: mitigationDetails,
+                    desc: document.getElementById('final-desc').value,
+                    area: footerText
+                }),
+                author: author,
+                timestamp: new Date(),
+                status: 'pendente'
+            };
+
+            try {
+                await window.db_add(window.db_collection, itemToSend);
+                alert("Sucesso! Efeito enviado para a lista de Solicitações do Gestor.");
+            } catch(e) {
+                console.error(e);
+                alert("Erro ao enviar: " + e.message);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             populateEffects();
-            
-            // Toggle de detalhes de área
-            document.querySelectorAll('input[name="area-type"]').forEach(input => {
-                input.addEventListener('change', () => {
-                    // Reset para standard se não for area
-                    if (input.value !== 'special') {
-                         document.getElementById('area-details').style.display = 'none';
-                    } else {
-                         // Chama o toggle correto se for special
-                         toggleAreaSpecifics();
-                         document.getElementById('area-details').style.display = 'block';
-                    }
-                    calculateCost();
-                });
-            });
-
-            // Lógica de inserção principal de efeito
-            document.querySelectorAll('#effect-list .dropdown-item').forEach(item => {
-                item.onclick = (e) => {
-                    selectedMainEffect = item.querySelector('strong').textContent;
-                    document.getElementById('btn-main-effect').textContent = selectedMainEffect;
-                    toggleDropdown('effect-list');
-                    calculateCost();
-                };
-            });
-            
-            // Previne input no campo de números do CSS (para exibir 0)
-            document.querySelectorAll('.quantity-display').forEach(input => {
-                 input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Backspace' || e.key === 'Delete') {
-                        e.preventDefault();
-                    }
-                 });
-            });
-            
-            // Garante estado inicial
             toggleAreaSpecifics();
-
-            // Inicialização do cálculo
             calculateCost();
         });
-        
     </script>
 </body>
 </html>

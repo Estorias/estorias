@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acervo - Estórias RPG</title>
+    <link rel="icon" type="image/x-icon" href="img/logo.ico">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================================
+           ESTILO GÓTICO
+        ========================================== */
+        
+        :root {
+            --bg-dark: #050505;
+            --bg-panel: #1a1a1a;
+            --text-main: #d1d5db;
+            --text-muted: #9ca3af;
+            --accent-silver: #C0C0C0;
+            --accent-gold: #daa520;
+            --accent-red: #7f1d1d;
+            --accent-purple: #581c87;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: #0c1421; 
+            color: var(--text-main);
+            font-family: 'EB Garamond', serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background-image: url('img/index/wall1.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: grayscale(100%); 
+            opacity: 0.2; 
+        }
+
+        h1, h2, h3, .font-gothic { font-family: 'Cinzel', serif; text-transform: uppercase; letter-spacing: 0.05em; }
+        
+        /* Header */
+        header {
+            background: linear-gradient(to bottom, rgba(5,5,5,0.9), rgba(5,5,5,0.6));
+            border-bottom: 1px solid #333;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(5px);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .header-title { font-size: 1.8rem; color: var(--accent-silver); text-shadow: 0 2px 5px black; }
+
+        .btn-back {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            border: 1px solid #333;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            background: rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+        .btn-back:hover { color: white; border-color: var(--accent-silver); }
+
+        /* Intro Section */
+        .intro-section {
+            max-width: 900px;
+            margin: 2rem auto 3rem auto;
+            text-align: center;
+            padding: 0 1rem;
+        }
+        
+        .intro-text {
+            color: #9ca3af;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            font-style: italic;
+            border-left: 3px solid var(--accent-silver);
+            border-right: 3px solid var(--accent-silver);
+            padding: 0 2rem;
+            background: linear-gradient(to right, transparent, rgba(0,0,0,0.3), transparent);
+        }
+
+        /* Nav */
+        .category-nav {
+            display: flex;
+            justify-content: center;
+            background-color: #0f1218;
+            border-bottom: 1px solid #333;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .cat-btn {
+            padding: 1.5rem 2rem;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #6b7280;
+            font-family: 'Cinzel', serif;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .cat-btn:hover { color: var(--text-main); background-color: rgba(255,255,255,0.02); }
+        .cat-btn.active { color: white; background-color: rgba(255,255,255,0.05); }
+
+        .cat-btn[data-cat="regras"].active { border-bottom-color: var(--accent-silver); }
+        .cat-btn[data-cat="oponentes"].active { border-bottom-color: #ef4444; }
+        .cat-btn[data-cat="efeitos"].active { border-bottom-color: #a855f7; }
+
+        /* Main */
+        main {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Toolbar */
+        .toolbar-wrapper {
+            display: flex;
+            gap: 1rem;
+            max-width: 800px;
+            margin: 0 auto 3rem auto;
+            align-items: center;
+        }
+
+        .search-wrapper { position: relative; flex-grow: 1; }
+        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid #444;
+            color: white;
+            font-family: 'EB Garamond', serif;
+            font-size: 1.2rem;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        .search-input:focus { outline: none; border-color: var(--accent-gold); box-shadow: 0 0 15px rgba(218, 165, 32, 0.1); }
+
+        .btn-index {
+            background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+            border: 1px solid #4b5563;
+            color: var(--text-main);
+            padding: 0 1.5rem;
+            height: 3.5rem;
+            font-family: 'Cinzel', serif;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+        .btn-index:hover { border-color: var(--accent-gold); color: white; }
+
+        /* Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Cards */
+        .item-card {
+            background-color: rgba(26, 26, 26, 0.8);
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .item-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+            background-color: #333; transition: background-color 0.3s;
+        }
+        .item-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); border-color: #555; }
+
+        .item-card[data-type="regras"]:hover::before { background-color: var(--accent-silver); }
+        .item-card[data-type="oponentes"]:hover::before { background-color: #ef4444; }
+        .item-card[data-type="efeitos"]:hover::before { background-color: #a855f7; }
+
+        .card-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;
+        }
+        .card-title { font-size: 1.3rem; color: var(--text-main); margin: 0; font-weight: 700; }
+        .card-tag {
+            font-size: 0.75rem; text-transform: uppercase; padding: 0.2rem 0.5rem;
+            border-radius: 2px; background-color: rgba(0,0,0,0.5); border: 1px solid #444; color: var(--text-muted);
+        }
+        .card-desc {
+            font-size: 1rem; color: #9ca3af; line-height: 1.6; margin-bottom: 1rem;
+            display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .card-footer { margin-top: auto; display: flex; justify-content: flex-end; font-size: 0.9rem; color: var(--accent-gold); opacity: 0.7; }
+
+        .empty-state { grid-column: 1 / -1; text-align: center; padding: 4rem; color: #555; }
+        .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; }
+
+        /* Animation */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; padding: 1rem;
+        }
+        .modal-content {
+            background: #111; border: 1px solid #444; max-width: 600px; width: 100%;
+            padding: 2rem; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.8); border-radius: 4px;
+            max-height: 90vh; overflow-y: auto;
+        }
+        /* Estilos específicos para o conteúdo HTML dentro do modal */
+        .modal-body-content p { margin-bottom: 0.8rem; line-height: 1.6; }
+        .modal-body-content ul { margin-left: 1.5rem; margin-bottom: 1rem; }
+        .modal-body-content b, .modal-body-content strong { color: var(--accent-silver); }
+        
+        .close-modal { position: absolute; top: 10px; right: 15px; font-size: 1.5rem; color: #777; cursor: pointer; }
+        .close-modal:hover { color: white; }
+
+        /* Side Menu */
+        .side-menu-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+            z-index: 1400; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+        }
+        .side-menu-overlay.active { opacity: 1; visibility: visible; }
+
+        .side-menu {
+            position: fixed; top: 0; right: -400px; width: 350px; height: 100%;
+            background-color: #0c0f14; border-left: 2px solid #333; z-index: 1500;
+            transition: right 0.4s cubic-bezier(0.25, 1, 0.5, 1); display: flex; flex-direction: column;
+        }
+        .side-menu.active { right: 0; }
+
+        .side-header { padding: 1.5rem; background: #18181b; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .side-title { color: var(--accent-silver); font-size: 1.2rem; }
+        .close-side { background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 1.5rem; }
+        
+        .side-list { flex: 1; overflow-y: auto; padding: 1rem; list-style: none; }
+        .side-item {
+            padding: 0.8rem 1rem; border-bottom: 1px solid #222; cursor: pointer; transition: all 0.2s;
+            color: #d1d5db; font-size: 1rem; display: flex; justify-content: space-between; align-items: center;
+        }
+        .side-item:hover { background-color: rgba(255,255,255,0.05); padding-left: 1.2rem; color: var(--accent-gold); }
+
+        .status-bar {
+            position: fixed; bottom: 10px; right: 10px; font-size: 0.7rem; color: #444;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="flex items-center gap-4">
+            <h1 class="header-title font-gothic"><i class="fa-solid fa-book-journal-whills" style="margin-right: 10px;"></i> Acervo</h1>
+        </div>
+        <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+    </header>
+
+    <!-- TEXTO EXPLICATIVO / LOREM IPSUM -->
+    <section class="intro-section">
+        <p class="intro-text">
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
+            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. 
+            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+        </p>
+    </section>
+
+    <nav class="category-nav">
+        <button class="cat-btn active" data-cat="regras" onclick="switchCategory('regras')"><i class="fa-solid fa-scale-balanced mr-2"></i> Regras</button>
+        <button class="cat-btn" data-cat="oponentes" onclick="switchCategory('oponentes')"><i class="fa-solid fa-skull mr-2"></i> Oponentes</button>
+        <button class="cat-btn" data-cat="efeitos" onclick="switchCategory('efeitos')"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Efeitos Especiais</button>
+    </nav>
+
+    <main>
+        <div class="toolbar-wrapper">
+            <div class="search-wrapper">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="Consultar arquivos..." onkeyup="filterItems()">
+            </div>
+            <button class="btn-index" onclick="toggleSideMenu()">
+                <i class="fa-solid fa-list-ul"></i> <span id="idxBtnLabel">Índice</span>
+            </button>
+        </div>
+
+        <div id="itemsGrid" class="content-grid">
+            <!-- Conteúdo JS -->
+        </div>
+    </main>
+
+    <!-- SIDE MENU -->
+    <div id="sideOverlay" class="side-menu-overlay" onclick="toggleSideMenu()"></div>
+    <aside id="sideMenu" class="side-menu">
+        <div class="side-header">
+            <h3 id="sideMenuTitle" class="side-title font-gothic">Índice</h3>
+            <button class="close-side" onclick="toggleSideMenu()"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <ul id="sideList" class="side-list"></ul>
+    </aside>
+
+    <!-- MODAL -->
+    <div id="detailModal" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <div id="connection-status" class="status-bar">Iniciando...</div>
+
+    <!-- LOGICA DE INTERFACE GLOBAL (Carregada Primeiro) -->
+    <script>
+        // Sem dados de Lore. Array vazio.
+        const defaultData = [];
+
+        // Variável global que recebe os dados do Firebase
+        window.libraryData = [...defaultData]; 
+        let currentCategory = 'regras';
+
+        // Atualiza o Grid
+        function renderItems(queryText = "") {
+            const grid = document.getElementById('itemsGrid');
+            grid.innerHTML = '';
+            const lowerQuery = queryText ? queryText.toLowerCase() : "";
+
+            const filtered = window.libraryData.filter(item => {
+                if (item.hidden) return false; // Não mostra ocultos
+                if (item.type !== currentCategory) return false;
+                
+                const t = (item.title || "").toLowerCase();
+                const d = (item.desc || "").toLowerCase();
+                const tag = (item.tag || "").toLowerCase();
+                return t.includes(lowerQuery) || d.includes(lowerQuery) || tag.includes(lowerQuery);
+            });
+
+            if (filtered.length === 0) {
+                // Se não houver nada (ou offline sem dados), mostra vazio
+                grid.innerHTML = `<div class="empty-state"><i class="fa-solid fa-ghost empty-icon"></i><p>Nenhum registro encontrado em ${currentCategory}.</p></div>`;
+                return;
+            }
+
+            filtered.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = `item-card fade-in`;
+                card.style.animationDelay = `${index * 0.05}s`;
+                card.setAttribute('data-type', item.type);
+                
+                card.onclick = () => openModal(item);
+
+                let colorClass = 'text-gray-400';
+                let iconClass = 'fa-scroll';
+                if(item.type === 'oponentes') { colorClass = 'text-red-400'; iconClass = 'fa-skull'; }
+                if(item.type === 'efeitos') { colorClass = 'text-purple-400'; iconClass = 'fa-wand-magic-sparkles'; }
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h3 class="card-title font-gothic ${colorClass}"><i class="fa-solid ${iconClass} mr-2" style="font-size:0.8em"></i>${item.title}</h3>
+                        <span class="card-tag">${item.tag}</span>
+                    </div>
+                    <p class="card-desc">${item.desc}</p>
+                    <div class="card-footer">Ver detalhes <i class="fa-solid fa-arrow-right ml-2"></i></div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function switchCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.querySelector(`.cat-btn[data-cat="${cat}"]`);
+            if(activeBtn) activeBtn.classList.add('active');
+
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchInput').placeholder = `Pesquisar ${cat}...`;
+            document.getElementById('idxBtnLabel').textContent = `Índice de ${cat.charAt(0).toUpperCase() + cat.slice(1)}`;
+            
+            renderItems();
+            populateSideMenu();
+        }
+
+        function filterItems() { renderItems(document.getElementById('searchInput').value); }
+
+        function toggleSideMenu() {
+            const menu = document.getElementById('sideMenu');
+            const overlay = document.getElementById('sideOverlay');
+            const isActive = menu.classList.contains('active');
+            if (isActive) {
+                menu.classList.remove('active');
+                overlay.classList.remove('active');
+            } else {
+                menu.classList.add('active');
+                overlay.classList.add('active');
+            }
+        }
+
+        function populateSideMenu() {
+            const list = document.getElementById('sideList');
+            const title = document.getElementById('sideMenuTitle');
+            title.textContent = `Índice: ${currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1)}`;
+            list.innerHTML = '';
+
+            const items = window.libraryData
+                .filter(i => i.type === currentCategory && !i.hidden)
+                .sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+
+            if (items.length === 0) {
+                list.innerHTML = '<li class="side-item" style="color:#555;">Vazio...</li>';
+                return;
+            }
+
+            items.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'side-item';
+                li.onclick = () => { openModal(item); toggleSideMenu(); };
+                li.innerHTML = `<span>${item.title}</span> <i class="fa-solid fa-chevron-right"></i>`;
+                list.appendChild(li);
+            });
+        }
+
+        function openModal(item) {
+            const modal = document.getElementById('detailModal');
+            const body = document.getElementById('modalBody');
+            
+            let colorTitle = '#d1d5db';
+            if(item.type === 'oponentes') colorTitle = '#f87171';
+            if(item.type === 'efeitos') colorTitle = '#c084fc';
+
+            // Lógica visual melhorada para o modal
+            // Se for oponente ou efeito com card visual, removemos a caixa interna para o card brilhar
+            let contentHtml = '';
+            
+            if (item.type === 'oponentes' || item.type === 'efeitos') {
+                // Conteúdo "Cru" (Cards visuais já têm seu background)
+                contentHtml = `
+                    <div class="modal-body-content" style="display: flex; justify-content: center;">
+                        ${item.fullText || "<p>Sem detalhes.</p>"}
+                    </div>
+                `;
+            } else {
+                // Regras e textos comuns ganham a caixa padrão
+                contentHtml = `
+                    <div class="text-gray-300 text-lg leading-relaxed font-serif modal-body-content">
+                        <div class="p-4 bg-gray-900 border border-gray-800 rounded">
+                            ${item.fullText || "<p>Sem detalhes.</p>"}
+                        </div>
+                    </div>
+                `;
+            }
+
+            body.innerHTML = `
+                <h2 class="font-gothic text-3xl mb-2" style="color: ${colorTitle}">${item.title}</h2>
+                <div class="flex items-center gap-2 mb-6 border-b border-gray-700 pb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-500 bg-gray-900 px-2 py-1 rounded">${item.type}</span>
+                    <span class="text-xs font-bold uppercase tracking-wider text-gray-500 bg-gray-900 px-2 py-1 rounded">${item.tag}</span>
+                </div>
+                ${contentHtml}
+            `;
+            modal.style.display = 'flex';
+        }
+
+        function closeModal(e) {
+            if (e && e.target !== document.getElementById('detailModal')) return;
+            document.getElementById('detailModal').style.display = 'none';
+        }
+
+        // Inicializa interface com dados padrão
+        window.onload = () => {
+            switchCategory('regras');
+        };
+    </script>
+
+    <!-- FIREBASE MODULE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC0OIN2Q0-4fBAlxMmrJ01_X7wtS4j5yWs",
+            authDomain: "site-estorias.firebaseapp.com",
+            projectId: "site-estorias",
+            storageBucket: "site-estorias.firebasestorage.app",
+            messagingSenderId: "638249584272",
+            appId: "1:638249584272:web:042099dcd5ad00ffb13a15"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const statusEl = document.getElementById('connection-status');
+
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try { await signInWithCustomToken(auth, __initial_auth_token); } 
+                    catch (e) { await signInAnonymously(auth); }
+                } else { await signInAnonymously(auth); }
+            } catch (error) { console.error("Erro Auth:", error); statusEl.innerText = "Erro Auth"; statusEl.style.color = "red"; }
+        };
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                statusEl.innerText = "Conectado ao Grimório"; statusEl.style.color = "green";
+                const q = query(collection(db, "acervo_conteudo"), orderBy("title"));
+                
+                onSnapshot(q, (snapshot) => {
+                    const newLibrary = [];
+                    snapshot.forEach((doc) => {
+                        newLibrary.push({ id: doc.id, ...doc.data() });
+                    });
+
+                    if(newLibrary.length > 0) {
+                        window.libraryData = newLibrary;
+                    } else {
+                        console.log("Banco conectado mas vazio ou sem dados novos.");
+                        // Mantém libraryData vazio se banco vazio
+                    }
+                    
+                    const currentSearch = document.getElementById('searchInput').value;
+                    window.renderItems(currentSearch);
+                    window.populateSideMenu();
+
+                }, (error) => {
+                    console.error("Erro leitura:", error);
+                    statusEl.innerText = "Erro Leitura"; statusEl.style.color = "red";
+                });
+            } else {
+                statusEl.innerText = "Desconectado";
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forja de Oponentes - Estórias RPG</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #050505; --bg-panel: #1a1a1a; --text-main: #d1d5db; --text-muted: #9ca3af;
+            --border-color: #333; --accent-silver: #C0C0C0; --accent-red: #7f1d1d; --accent-gold: #daa520;
+            --role-color: #333; 
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: #0c1421; color: var(--text-main); font-family: 'EB Garamond', serif; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background-image: url('img/index/wall1.jpg'); background-size: cover; background-position: center; filter: grayscale(100%); opacity: 0.2; }
+        h1, h2, h3, .font-gothic { font-family: 'Cinzel', serif; text-transform: uppercase; }
+        header { padding: 1rem; border-bottom: 1px solid var(--border-color); background-color: rgba(0,0,0,0.8); display: flex; justify-content: space-between; align-items: center; backdrop-filter: blur(5px); }
+        .home-link { color: var(--text-muted); text-decoration: none; display: flex; align-items: center; gap: 0.5rem; transition: color 0.2s; }
+        .home-link:hover { color: white; }
+        .main-container { display: flex; flex-wrap: wrap; padding: 2rem; gap: 2rem; max-width: 1800px; width: 100%; margin: 0 auto; }
+        .editor-column { flex: 1; min-width: 400px; display: flex; flex-direction: column; gap: 1.5rem; }
+        .preview-column { flex: 1; min-width: 400px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
+        .section-box { background-color: rgba(26, 26, 26, 0.95); border: 1px solid var(--border-color); padding: 1.5rem; border-radius: 4px; position: relative; box-shadow: 0 4px 6px rgba(0,0,0,0.5); }
+        .section-title { position: absolute; top: -12px; left: 15px; background-color: #1a1a1a; padding: 0 10px; font-family: 'Cinzel', serif; font-size: 0.9rem; color: var(--accent-silver); border: 1px solid var(--border-color); border-radius: 4px; }
+        input, select, textarea { width: 100%; background-color: #111; border: 1px solid #444; color: white; padding: 0.75rem; font-family: 'EB Garamond', serif; font-size: 1rem; margin-top: 0.5rem; }
+        input:focus, select:focus, textarea:focus { border-color: var(--accent-silver); outline: none; }
+        label { display: block; color: var(--text-muted); font-family: 'Cinzel', serif; font-size: 0.85rem; margin-top: 1rem; margin-bottom: 0.2rem; }
+        label:first-child { margin-top: 0; }
+        .attr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        .actions-row { display: flex; gap: 1rem; width: 100%; max-width: 600px; margin-top: 2rem; flex-wrap: wrap; }
+        .btn-action { flex: 1; padding: 1rem; border: none; font-family: 'Cinzel', serif; font-weight: bold; cursor: pointer; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s; min-width: 150px; }
+        .btn-save { background-color: var(--accent-silver); color: black; }
+        .btn-save:hover { background-color: white; }
+        .btn-json { background-color: #333; color: white; border: 1px solid #555; }
+        .btn-json:hover { background-color: #444; }
+        .btn-send-acervo { background: linear-gradient(to right, #7f1d1d, #991b1b); color: white; border: 1px solid #b91c1c; box-shadow: 0 0 15px rgba(185, 28, 28, 0.3); width: 100%; }
+        .btn-send-acervo:hover { filter: brightness(1.2); box-shadow: 0 0 25px rgba(185, 28, 28, 0.6); }
+        
+        #preview-card { width: 550px; background-color: #e5e5e5; color: #111; padding: 2rem; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.8); border: 4px solid var(--role-color); font-family: 'EB Garamond', serif; transition: border-color 0.3s ease; }
+        .sheet-header { display: flex; gap: 1.5rem; align-items: center; border-bottom: 3px solid var(--role-color); padding-bottom: 1rem; margin-bottom: 1.5rem; transition: border-color 0.3s ease; }
+        .sheet-portrait-frame { width: 100px; height: 100px; border-radius: 50%; overflow: hidden; border: 3px solid var(--role-color); flex-shrink: 0; position: relative; background-color: #ccc; display: flex; justify-content: center; align-items: center; }
+        .sheet-portrait-img { width: 100%; height: 100%; object-fit: cover; }
+        .sheet-info-col { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        .sheet-title-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5px; }
+        .sheet-name { font-family: 'Cinzel', serif; font-size: 1.8rem; font-weight: 900; text-transform: uppercase; margin: 0; line-height: 1; }
+        .sheet-role { font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 700; text-align: right; color: var(--role-color); white-space: nowrap; }
+        .status-row { display: flex; gap: 2rem; margin-bottom: 1rem; font-size: 1.1rem; }
+        .status-box { flex: 1; }
+        .status-label { font-weight: bold; text-transform: uppercase; font-size: 0.9rem; font-family: 'Cinzel', serif; }
+        .checkbox-track { display: flex; gap: 4px; margin-top: 4px; }
+        .track-box { width: 20px; height: 20px; border: 2px solid #333; background: transparent; }
+        .attributes-section { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 2rem; margin: 1.5rem 0; border-top: 1px solid #ccc; border-bottom: 1px solid #ccc; padding: 1rem 0; }
+        .attr-display { display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; }
+        .attr-name { font-weight: bold; font-family: 'Cinzel', serif; color: #333; }
+        .attr-val { font-weight: bold; }
+        .info-block { margin-bottom: 1rem; }
+        .info-title { font-weight: bold; text-transform: uppercase; font-size: 0.9rem; margin-right: 0.5rem; }
+        .abilities-section h3 { font-size: 1.1rem; border-bottom: 1px solid #333; margin-bottom: 0.5rem; margin-top: 1.5rem; font-family: 'Cinzel', serif; }
+        .ability-item { margin-bottom: 0.8rem; }
+        .ability-name { font-weight: bold; font-family: 'Cinzel', serif; color: #7f1d1d; }
+        .watermark { position: absolute; bottom: 10px; right: 10px; opacity: 0.2; font-family: 'Cinzel', serif; font-size: 0.8rem; }
+        .crop-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; }
+        .crop-container { max-width: 800px; max-height: 60vh; background: #111; overflow: hidden; border: 1px solid #444; }
+        .crop-container img { max-width: 100%; max-height: 60vh; display: block; }
+        .crop-controls { margin-top: 2rem; display: flex; gap: 1rem; width: 100%; max-width: 400px; }
+        .status-bar { position: fixed; bottom: 10px; right: 10px; font-size: 0.8rem; color: #666; }
+        .status-bar.online { color: #10b981; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="flex items-center gap-4">
+            <a href="index.html" class="home-link"><i class="fa-solid fa-arrow-left"></i> Voltar</a>
+            <h1 class="font-gothic text-xl text-white ml-4" style="margin: 0; font-size: 1.2rem;">Forja de Oponentes</h1>
+            <span id="connStatus" class="status-bar"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="editor-column">
+            <div class="section-box">
+                <span class="section-title">1. Identidade & Papel</span>
+                <label style="color: var(--accent-gold);">Imagem do Oponente (Opcional)</label>
+                <div style="background: #111; border: 1px solid #444; padding: 10px; border-radius: 4px;">
+                    <input type="file" id="inp-img-upload" accept="image/*" onchange="handleImageUpload(event)" style="border:none; margin:0; padding:0;">
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <div style="flex: 2;"><label>Nome do Oponente</label><input type="text" id="inp-name" placeholder="Ex: Guarda da Flâmula" oninput="updatePreview()"></div>
+                    <div style="flex: 1;"><label>Papel</label><select id="inp-role" onchange="changeRole()"><option value="atacante">Atacante</option><option value="defensor">Defensor</option><option value="controlador">Controlador</option><option value="bucha">Bucha de Canhão</option><option value="grupo">Grupo</option></select></div>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                    <div style="flex: 1;"><label>Tamanho</label><select id="inp-size" onchange="updatePreview()"><option value="Médio">Médio</option><option value="Pequeno">Pequeno</option><option value="Grande">Grande</option><option value="Enorme">Enorme</option><option value="Colossal">Colossal</option></select></div>
+                    <div style="flex: 1;"><label>Tag / Tipo</label><input type="text" id="inp-tag" placeholder="Ex: Humano, Monstro" oninput="updatePreview()"></div>
+                </div>
+                <div id="group-config" style="display: none; margin-top: 1rem; background: #222; padding: 10px; border-radius: 4px;">
+                    <label style="color: var(--accent-gold);">Configuração do Grupo</label>
+                    <div style="display: flex; gap: 1rem;">
+                        <div style="flex: 1;"><label>Nº Integrantes</label><input type="number" id="inp-members" value="3" min="2" oninput="calculateStats()"></div>
+                        <div style="flex: 1;"><label>Nº Defensores</label><input type="number" id="inp-defenders" value="0" min="0" oninput="calculateStats()"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-box">
+                <span class="section-title">2. Atributos</span>
+                <div class="attr-grid">
+                    <div><label>Força</label><input type="number" id="attr-for" value="0" oninput="updatePreview()"></div>
+                    <div><label>Fortitude</label><input type="number" id="attr-fort" value="0" oninput="calculateStats()"></div>
+                    <div><label>Destreza</label><input type="number" id="attr-des" value="0" oninput="updatePreview()"></div>
+                    <div><label>Criatividade</label><input type="number" id="attr-cri" value="0" oninput="updatePreview()"></div>
+                    <div><label>Discernimento</label><input type="number" id="attr-dis" value="0" oninput="updatePreview()"></div>
+                    <div><label>Vontade</label><input type="number" id="attr-von" value="0" oninput="updatePreview()"></div>
+                </div>
+            </div>
+
+            <div class="section-box">
+                <span class="section-title">3. Estatísticas</span>
+                <div style="display: flex; gap: 1rem;">
+                    <div style="flex: 1;"><label>Vigor Base</label><input type="number" id="inp-base-vigor" style="color: var(--accent-silver);" oninput="calculateStats()"></div>
+                    <div style="flex: 1;"><label>Vigor Total</label><input type="number" id="stat-vigor" readonly style="color: var(--accent-gold); font-weight: bold;"></div>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <div style="flex: 1;"><label>PV</label><input type="number" id="stat-pv" oninput="updatePreview()"></div>
+                    <div style="flex: 1;"><label>Tenacidade</label><input type="number" id="stat-tenacity" readonly></div>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <div style="flex: 1;"><label>Estresse</label><input type="number" id="stat-stress" value="3" oninput="updatePreview()"></div>
+                    <div style="flex: 1;"><label>Velocidade</label><input type="text" id="stat-speed" placeholder="Ex: 9m" oninput="updatePreview()"></div>
+                </div>
+            </div>
+
+            <div class="section-box">
+                <span class="section-title">4. Detalhes</span>
+                <div style="display: flex; gap: 1rem;">
+                    <div style="flex: 1;"><label>Protegido</label><input type="text" id="inp-protected" placeholder="Ex: Fogo (1)" oninput="updatePreview()"></div>
+                    <div style="flex: 1;"><label>Vulnerável</label><input type="text" id="inp-vulnerable" placeholder="Ex: Gelo (1)" oninput="updatePreview()"></div>
+                </div>
+                <label>Imunidades</label><input type="text" id="inp-immune" placeholder="Ex: Veneno" oninput="updatePreview()">
+                <hr style="border: 0; border-top: 1px solid #333; margin: 1.5rem 0;">
+                <label>Habilidade Passiva</label><textarea id="role-ability" rows="3" readonly style="color: #999; font-style: italic;"></textarea>
+                <label>Habilidades Especiais</label><textarea id="special-abilities" rows="5" placeholder="Nome: Descrição..." oninput="updatePreview()"></textarea>
+                <label>Descrição / Instinto</label><textarea id="desc-flavor" rows="3" placeholder="Descrição visual..." oninput="updatePreview()"></textarea>
+                <label style="margin-top: 1.5rem;">Autor da Ficha</label><input type="text" id="inp-author" placeholder="Seu nome" style="border-color: var(--accent-gold);">
+            </div>
+        </div>
+
+        <div class="preview-column">
+            <h2 class="font-gothic text-white mb-4">Visualização da Ficha</h2>
+            <div id="preview-card">
+                <div class="sheet-header">
+                    <div class="sheet-portrait-frame" id="prev-img-container" style="display: none;">
+                        <img id="prev-img-element" class="sheet-portrait-img" src="" alt="Retrato">
+                    </div>
+                    <div class="sheet-info-col">
+                        <div class="sheet-title-row">
+                            <h1 class="sheet-name" id="prev-name">Nome do Oponente</h1>
+                            <div class="sheet-role">PAPEL: <span id="prev-role">ATACANTE</span></div>
+                        </div>
+                        <div style="margin-top: 0; font-size: 0.9rem; text-transform: uppercase;">
+                            <span id="prev-size">MÉDIO</span> • <span id="prev-tag">HUMANO</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="status-row">
+                    <div class="status-box"><span class="status-label">Vigor</span>: <span id="prev-vigor-num">0</span><div class="checkbox-track" id="prev-vigor-track"></div></div>
+                    <div class="status-box" style="flex: 0 0 80px;"><span class="status-label">PV</span>: <span id="prev-pv-num" style="font-size: 1.2rem; font-weight: bold;">2</span></div>
+                </div>
+                <div class="status-row">
+                     <div class="status-box"><span class="status-label">Tenacidade</span>: <span id="prev-tenacity">2</span> Ônus</div>
+                    <div class="status-box"><span class="status-label">Estresse</span>: <div class="checkbox-track" id="prev-stress-track" style="display: inline-flex; vertical-align: middle;"></div></div>
+                </div>
+                <div class="attributes-section">
+                    <div class="attr-display"><span class="attr-name">➤ Força:</span> <span class="attr-val" id="prev-for">+0</span></div>
+                    <div class="attr-display"><span class="attr-name">➤ Fortitude:</span> <span class="attr-val" id="prev-fort">+0</span></div>
+                    <div class="attr-display"><span class="attr-name">➤ Destreza:</span> <span class="attr-val" id="prev-des">+0</span></div>
+                    <div class="attr-display"><span class="attr-name">➤ Criatividade:</span> <span class="attr-val" id="prev-cri">+0</span></div>
+                    <div class="attr-display"><span class="attr-name">➤ Discernimento:</span> <span class="attr-val" id="prev-dis">+0</span></div>
+                    <div class="attr-display"><span class="attr-name">➤ Vontade:</span> <span class="attr-val" id="prev-von">+0</span></div>
+                </div>
+                <div class="info-block">
+                    <div><span class="info-title">Protegido (x):</span> <span id="prev-protected">-</span></div>
+                    <div><span class="info-title">Vulnerável (x):</span> <span id="prev-vulnerable">-</span></div>
+                    <div><span class="info-title">Imunidade:</span> <span id="prev-immune">-</span></div>
+                    <div style="margin-top: 5px;"><span class="info-title">Velocidade:</span> <span id="prev-speed">9m</span></div>
+                </div>
+                <div class="info-block" style="font-style: italic; color: #555; margin-bottom: 1.5rem;"><span id="prev-desc"></span></div>
+                <div class="abilities-section">
+                    <h3>Habilidades do Papel</h3>
+                    <div class="ability-item"><div id="prev-role-ability">Texto da habilidade...</div></div>
+                    <h3>Habilidades Especiais</h3>
+                    <div id="prev-special-abilities"></div>
+                </div>
+                <div class="watermark">Estórias RPG</div>
+            </div>
+            <div class="actions-row">
+                <button class="btn-action btn-json" onclick="saveJSON()"><i class="fa-solid fa-code"></i> JSON</button>
+                <button class="btn-action btn-save" onclick="savePNG()"><i class="fa-solid fa-image"></i> PNG</button>
+                <button class="btn-action btn-send-acervo" onclick="sendToAcervo()"><i class="fa-solid fa-share-from-square"></i> Enviar Solicitação</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="cropModal" class="crop-modal">
+        <h3 class="font-gothic text-white mb-4">Ajustar Retrato</h3>
+        <div class="crop-container"><img id="image-to-crop" src=""></div>
+        <div class="crop-controls">
+            <button class="btn-action" style="background:#ef4444; color:white; border:none;" onclick="cancelCrop()">Cancelar</button>
+            <button class="btn-action" style="background:#10b981; color:white; border:none;" onclick="confirmCrop()">Confirmar</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC0OIN2Q0-4fBAlxMmrJ01_X7wtS4j5yWs",
+            authDomain: "site-estorias.firebaseapp.com",
+            projectId: "site-estorias",
+            storageBucket: "site-estorias.firebasestorage.app",
+            messagingSenderId: "638249584272",
+            appId: "1:638249584272:web:042099dcd5ad00ffb13a15"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const statusEl = document.getElementById('connStatus');
+
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try { await signInWithCustomToken(auth, __initial_auth_token); } 
+                    catch (e) { await signInAnonymously(auth); }
+                } else { await signInAnonymously(auth); }
+            } catch (error) { console.error("Erro Auth:", error); statusEl.innerText = "Offline"; }
+        };
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                statusEl.innerText = "Online"; statusEl.classList.add('online');
+                window.db = db; 
+                window.db_collection = collection(db, "acervo_solicitacoes"); // ALTERADO PARA SOLICITACOES
+                window.db_add = addDoc;
+            } else { statusEl.innerText = "Offline"; }
+        });
+    </script>
+
+    <script>
+        const roleData = {
+            'atacante': { baseVigor: 4, basePV: 2, baseTen: 2, color: '#ef4444', ability: "Ao usar ação Atacar ou Contra Atacar, causa +1 de dano." },
+            'defensor': { baseVigor: 3, basePV: 4, baseTen: 2, color: '#3b82f6', ability: "Todos os aliados recebem Protegido(1) enquanto estiverem a até 3 metros." },
+            'controlador': { baseVigor: 5, basePV: 1, baseTen: 3, color: '#a855f7', ability: "Pode usar Fortalecer/Prejudicar como ação extra (1x por turno)." },
+            'bucha': { baseVigor: 2, basePV: 2, baseTen: 2, color: '#10b981', ability: "Age no final do turno de um aliado se houver 2+ na cena. Pode formar GRUPO como ação extra." },
+            'grupo': { baseVigor: 2, basePV: 0, baseTen: 1, color: '#f97316', ability: "Age um número de turnos igual a metade dos integrantes (arred. cima), máx 3." }
+        };
+
+        function fmtAttr(val) { val = parseInt(val) || 0; return val >= 0 ? `+${val}` : `${val}`; }
+
+        let cropper;
+        let currentCroppedImage = ""; 
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('image-to-crop').src = e.target.result;
+                    document.getElementById('cropModal').style.display = 'flex';
+                    if (cropper) cropper.destroy();
+                    cropper = new Cropper(document.getElementById('image-to-crop'), { aspectRatio: 1, viewMode: 1, autoCropArea: 1, background: false });
+                    event.target.value = '';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function confirmCrop() {
+            if (!cropper) return;
+            const canvas = cropper.getCroppedCanvas({ width: 300, height: 300 });
+            currentCroppedImage = canvas.toDataURL();
+            document.getElementById('prev-img-element').src = currentCroppedImage;
+            document.getElementById('prev-img-container').style.display = 'flex';
+            closeCropModal();
+        }
+
+        function cancelCrop() { closeCropModal(); }
+        function closeCropModal() {
+            document.getElementById('cropModal').style.display = 'none';
+            if (cropper) { cropper.destroy(); cropper = null; }
+        }
+
+        function changeRole() {
+            const roleKey = document.getElementById('inp-role').value;
+            const data = roleData[roleKey];
+            if(roleKey === 'grupo') {
+                const members = parseInt(document.getElementById('inp-members').value) || 3;
+                document.getElementById('inp-base-vigor').value = data.baseVigor * members;
+            } else {
+                document.getElementById('inp-base-vigor').value = data.baseVigor;
+            }
+            calculateStats();
+        }
+
+        function calculateStats() {
+            const roleKey = document.getElementById('inp-role').value;
+            const data = roleData[roleKey];
+            const fort = parseInt(document.getElementById('attr-fort').value) || 0;
+            const baseVigorInput = parseInt(document.getElementById('inp-base-vigor').value) || 0;
+            const groupConfig = document.getElementById('group-config');
+            
+            if(roleKey === 'grupo') {
+                groupConfig.style.display = 'block';
+                const members = parseInt(document.getElementById('inp-members').value) || 1;
+                const defMembers = parseInt(document.getElementById('inp-defenders').value) || 0;
+                document.getElementById('stat-pv').value = (defMembers * 2); 
+                document.getElementById('stat-tenacity').value = (data.baseTen * members); 
+            } else {
+                groupConfig.style.display = 'none';
+                document.getElementById('stat-pv').value = data.basePV;
+                document.getElementById('stat-tenacity').value = data.baseTen;
+            }
+            document.getElementById('stat-vigor').value = baseVigorInput + fort;
+            document.getElementById('role-ability').value = data.ability;
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const roleKey = document.getElementById('inp-role').value;
+            const data = roleData[roleKey];
+            document.documentElement.style.setProperty('--role-color', data.color);
+
+            document.getElementById('prev-name').textContent = document.getElementById('inp-name').value || "NOME DO OPONENTE";
+            document.getElementById('prev-role').textContent = document.getElementById('inp-role').options[document.getElementById('inp-role').selectedIndex].text;
+            document.getElementById('prev-size').textContent = document.getElementById('inp-size').value;
+            document.getElementById('prev-tag').textContent = document.getElementById('inp-tag').value || "TIPO";
+
+            const vigor = parseInt(document.getElementById('stat-vigor').value) || 0;
+            document.getElementById('prev-vigor-num').textContent = vigor;
+            document.getElementById('prev-pv-num').textContent = document.getElementById('stat-pv').value;
+            document.getElementById('prev-tenacity').textContent = document.getElementById('stat-tenacity').value;
+
+            const vigorTrack = document.getElementById('prev-vigor-track');
+            vigorTrack.innerHTML = '';
+            const boxCount = Math.min(vigor, 20); 
+            for(let i=0; i<boxCount; i++) vigorTrack.appendChild(document.createElement('div')).className = 'track-box';
+            if(vigor > 20) vigorTrack.innerHTML += `<span>... (+${vigor-20})</span>`;
+
+            const stress = parseInt(document.getElementById('stat-stress').value) || 0;
+            const stressTrack = document.getElementById('prev-stress-track');
+            stressTrack.innerHTML = '';
+            for(let i=0; i<stress; i++) stressTrack.appendChild(document.createElement('div')).className = 'track-box';
+
+            document.getElementById('prev-for').textContent = fmtAttr(document.getElementById('attr-for').value);
+            document.getElementById('prev-fort').textContent = fmtAttr(document.getElementById('attr-fort').value);
+            document.getElementById('prev-des').textContent = fmtAttr(document.getElementById('attr-des').value);
+            document.getElementById('prev-cri').textContent = fmtAttr(document.getElementById('attr-cri').value);
+            document.getElementById('prev-dis').textContent = fmtAttr(document.getElementById('attr-dis').value);
+            document.getElementById('prev-von').textContent = fmtAttr(document.getElementById('attr-von').value);
+
+            document.getElementById('prev-protected').textContent = document.getElementById('inp-protected').value || "-";
+            document.getElementById('prev-vulnerable').textContent = document.getElementById('inp-vulnerable').value || "-";
+            document.getElementById('prev-immune').textContent = document.getElementById('inp-immune').value || "-";
+            document.getElementById('prev-speed').textContent = document.getElementById('stat-speed').value || "Padrão";
+            document.getElementById('prev-desc').textContent = document.getElementById('desc-flavor').value;
+
+            document.getElementById('prev-role-ability').innerHTML = `<strong>Passiva: </strong>` + document.getElementById('role-ability').value;
+            
+            const specialText = document.getElementById('special-abilities').value;
+            const specialContainer = document.getElementById('prev-special-abilities');
+            if(specialText) {
+                specialContainer.innerHTML = specialText.split('\n').map(line => {
+                    if(line.trim() === '') return '';
+                    const parts = line.split(':');
+                    if(parts.length > 1) return `<div class="ability-item"><span class="ability-name">► ${parts[0]}:</span> ${parts.slice(1).join(':')}</div>`;
+                    return `<div class="ability-item">► ${line}</div>`;
+                }).join('');
+            } else { specialContainer.innerHTML = '<span style="color:#999; font-size:0.8rem;">Nenhuma habilidade especial.</span>'; }
+        }
+
+        function saveJSON() {
+            const data = buildData();
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `${data.nome || 'oponente'}.json`;
+            a.click();
+        }
+
+        function savePNG() {
+            html2canvas(document.getElementById('preview-card'), { scale: 2, backgroundColor: null }).then(canvas => {
+                const a = document.createElement("a");
+                a.href = canvas.toDataURL("image/png");
+                a.download = `${document.getElementById('inp-name').value || 'oponente'}.png`;
+                a.click();
+            });
+        }
+
+        function buildData() {
+            return {
+                nome: document.getElementById('inp-name').value,
+                papel: document.getElementById('inp-role').value,
+                tamanho: document.getElementById('inp-size').value,
+                tag: document.getElementById('inp-tag').value,
+                atributos: {
+                    for: document.getElementById('attr-for').value,
+                    fort: document.getElementById('attr-fort').value,
+                    des: document.getElementById('attr-des').value,
+                    cri: document.getElementById('attr-cri').value,
+                    dis: document.getElementById('attr-dis').value,
+                    von: document.getElementById('attr-von').value,
+                },
+                stats: {
+                    baseVigor: document.getElementById('inp-base-vigor').value,
+                    vigor: document.getElementById('stat-vigor').value,
+                    pv: document.getElementById('stat-pv').value,
+                    tenacidade: document.getElementById('stat-tenacity').value,
+                    estresse: document.getElementById('stat-stress').value,
+                    velocidade: document.getElementById('stat-speed').value,
+                },
+                resistencias: {
+                    protegido: document.getElementById('inp-protected').value,
+                    vulneravel: document.getElementById('inp-vulnerable').value,
+                    imune: document.getElementById('inp-immune').value,
+                },
+                habilidades: {
+                    papel: document.getElementById('role-ability').value,
+                    especiais: document.getElementById('special-abilities').value,
+                },
+                descricao: document.getElementById('desc-flavor').value,
+                autor: document.getElementById('inp-author').value
+            };
+        }
+
+        async function sendToAcervo() {
+            if(!window.db) { alert("Sem conexão com o Grimório (Firebase)."); return; }
+            
+            const rawData = buildData();
+            if(!rawData.nome) { alert("Dê um nome ao oponente."); return; }
+
+            const roleColor = roleData[rawData.papel].color;
+            
+            let abilitiesHtml = "";
+            if(rawData.habilidades.especiais) {
+                abilitiesHtml = rawData.habilidades.especiais.split('\n').map(line => {
+                    if(!line.trim()) return "";
+                    const parts = line.split(':');
+                    if(parts.length > 1) return `<div style="margin-bottom:5px;"><strong style="color:#7f1d1d;">► ${parts[0]}:</strong> ${parts.slice(1).join(':')}</div>`;
+                    return `<div>► ${line}</div>`;
+                }).join('');
+            }
+
+            const imageHtml = currentCroppedImage ? `<div style="float:left; width:80px; height:80px; border-radius:50%; overflow:hidden; border:3px solid ${roleColor}; margin-right:15px; margin-bottom:10px;"><img src="${currentCroppedImage}" style="width:100%; height:100%; object-fit:cover;"></div>` : '';
+
+            const htmlContent = `
+                <div style="font-family:'EB Garamond', serif; color:#d1d5db;">
+                    <div style="overflow:hidden; margin-bottom:15px; border-bottom:2px solid ${roleColor}; padding-bottom:10px;">
+                        ${imageHtml}
+                        <h2 style="margin:0; font-family:'Cinzel',serif; font-size:1.6rem; line-height:1.2;">${rawData.nome}</h2>
+                        <div style="font-size:0.8rem; color:#9ca3af; text-transform:uppercase;">${rawData.tamanho} • ${rawData.tag}</div>
+                        <div style="font-family:'Cinzel',serif; font-weight:bold; color:${roleColor}; margin-top:5px;">PAPEL: ${rawData.papel.toUpperCase()}</div>
+                    </div>
+
+                    <div style="display:flex; gap:15px; margin-bottom:10px; font-size:0.9rem;">
+                        <div style="flex:1; background:#1a1a1a; padding:5px; border:1px solid #333; text-align:center;"><strong>Vigor:</strong> ${rawData.stats.vigor}</div>
+                        <div style="flex:1; background:#1a1a1a; padding:5px; border:1px solid #333; text-align:center;"><strong>PV:</strong> ${rawData.stats.pv}</div>
+                        <div style="flex:1; background:#1a1a1a; padding:5px; border:1px solid #333; text-align:center;"><strong>Tenacidade:</strong> ${rawData.stats.tenacidade}</div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; font-size:0.9rem; margin-bottom:15px; border-bottom:1px solid #333; padding-bottom:10px;">
+                        <div><strong>For:</strong> ${fmtAttr(rawData.atributos.for)}</div>
+                        <div><strong>Cri:</strong> ${fmtAttr(rawData.atributos.cri)}</div>
+                        <div><strong>Fort:</strong> ${fmtAttr(rawData.atributos.fort)}</div>
+                        <div><strong>Dis:</strong> ${fmtAttr(rawData.atributos.dis)}</div>
+                        <div><strong>Des:</strong> ${fmtAttr(rawData.atributos.des)}</div>
+                        <div><strong>Von:</strong> ${fmtAttr(rawData.atributos.von)}</div>
+                    </div>
+
+                    <div style="font-size:0.9rem; margin-bottom:15px;">
+                        <div><strong>Protegido:</strong> ${rawData.resistencias.protegido || '-'}</div>
+                        <div><strong>Vulnerável:</strong> ${rawData.resistencias.vulneravel || '-'}</div>
+                        <div><strong>Imune:</strong> ${rawData.resistencias.imune || '-'}</div>
+                        <div><strong>Velocidade:</strong> ${rawData.stats.velocidade || '9m'}</div>
+                    </div>
+
+                    <div style="font-style:italic; color:#9ca3af; margin-bottom:15px; padding:5px; border-left:2px solid #333;">
+                        "${rawData.descricao}"
+                    </div>
+
+                    <div style="background:#111; padding:10px; border:1px solid #333; border-radius:4px;">
+                        <div style="margin-bottom:10px;"><strong>Passiva:</strong> ${rawData.habilidades.papel}</div>
+                        ${abilitiesHtml}
+                    </div>
+                    
+                    <div style="font-size:0.7rem; color:#666; margin-top:10px; text-align:right;">Autor: ${rawData.autor || 'Desconhecido'}</div>
+                </div>
+            `;
+
+            const itemToSend = {
+                type: 'oponentes',
+                title: rawData.nome,
+                tag: rawData.tag || rawData.papel,
+                desc: `${rawData.tamanho} - ${rawData.papel.toUpperCase()}. Vigor: ${rawData.stats.vigor}.`,
+                fullText: htmlContent,
+                rawJson: JSON.stringify(rawData, null, 2), // Para edição futura
+                timestamp: new Date(),
+                status: 'pendente' // Marca como pendente para ir para solicitacoes
+            };
+
+            try {
+                // Envia para collection de solicitações
+                await window.db_add(window.db_collection, itemToSend);
+                alert("Sucesso! Solicitação enviada para revisão.");
+            } catch(e) {
+                console.error(e);
+                alert("Erro ao enviar: " + e.message);
+            }
+        }
+
+        window.onload = () => { changeRole(); };
+    </script>
+</body>
+</html>
