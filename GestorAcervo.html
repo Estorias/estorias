@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestor do Acervo - Estórias RPG</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #050505; --bg-panel: #1a1a1a; --text-main: #d1d5db; --text-muted: #9ca3af;
+            --border-color: #333; --accent-silver: #C0C0C0; --accent-gold: #daa520; --accent-red: #7f1d1d; --accent-purple: #581c87;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #0c1421; color: var(--text-main); font-family: 'EB Garamond', serif;
+            min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden;
+        }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background-image: url('img/index/wall1.jpg'); background-size: cover; background-position: center;
+            filter: grayscale(100%); opacity: 0.15; 
+        }
+        h1, h2, h3, .font-gothic { font-family: 'Cinzel', serif; text-transform: uppercase; }
+
+        header {
+            padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); background-color: rgba(5, 5, 5, 0.9);
+            display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
+        }
+        .header-title { color: var(--accent-gold); font-size: 1.5rem; letter-spacing: 1px; }
+        .btn-back {
+            color: var(--text-muted); text-decoration: none; font-family: 'Cinzel', serif; border: 1px solid #333;
+            padding: 0.5rem 1rem; transition: all 0.3s;
+        }
+        .btn-back:hover { color: white; border-color: var(--accent-silver); }
+
+        .tabs-container { display: flex; justify-content: center; background: #0f1218; border-bottom: 1px solid #333; flex-wrap: wrap; }
+        .tab-btn {
+            padding: 1.2rem 1.5rem; background: transparent; border: none; border-bottom: 3px solid transparent;
+            color: #6b7280; font-family: 'Cinzel', serif; font-size: 0.9rem; cursor: pointer; transition: all 0.3s;
+            flex: 1; min-width: 150px;
+        }
+        .tab-btn:hover { background-color: rgba(255,255,255,0.02); color: var(--text-main); }
+        .tab-btn.active { color: var(--accent-gold); border-bottom-color: var(--accent-gold); background-color: rgba(218, 165, 32, 0.05); }
+
+        main { max-width: 1000px; width: 100%; margin: 2rem auto; padding: 0 2rem; flex: 1; }
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .form-card {
+            background-color: rgba(26, 26, 26, 0.9); border: 1px solid var(--border-color); padding: 2rem;
+            border-radius: 4px; box-shadow: 0 4px 20px rgba(0,0,0,0.6); margin-bottom: 2rem;
+        }
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; color: var(--text-muted); font-family: 'Cinzel', serif; font-size: 0.9rem; margin-bottom: 0.5rem; }
+        
+        input[type="text"], input[type="file"], select, textarea {
+            width: 100%; background-color: #0a0a0a; border: 1px solid #444; color: white; padding: 1rem;
+            font-family: 'EB Garamond', serif; font-size: 1.1rem; border-radius: 2px; transition: border-color 0.3s;
+        }
+        input:focus, textarea:focus { outline: none; border-color: var(--accent-gold); }
+
+        .btn-publish {
+            width: 100%; padding: 1rem; background: linear-gradient(to bottom, #222, #111);
+            border: 1px solid var(--accent-gold); color: var(--accent-gold); font-family: 'Cinzel', serif;
+            font-weight: bold; font-size: 1.1rem; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+            transition: all 0.3s; margin-top: 1rem;
+        }
+        .btn-publish:hover { background: var(--accent-gold); color: black; }
+        .btn-publish.editing { background: linear-gradient(to bottom, #1e3a8a, #111); border-color: #60a5fa; color: #60a5fa; }
+        .btn-publish.editing:hover { background: #60a5fa; color: black; }
+
+        .manage-item {
+            display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4);
+            border: 1px solid #333; padding: 1rem; margin-bottom: 0.8rem; border-left: 4px solid transparent;
+        }
+        .manage-item:hover { background: rgba(255,255,255,0.02); }
+        .manage-item.type-regras { border-left-color: var(--accent-silver); }
+        .manage-item.type-oponentes { border-left-color: var(--accent-red); }
+        .manage-item.type-efeitos { border-left-color: var(--accent-purple); }
+        .manage-item.hidden-item { opacity: 0.5; border: 1px dashed #555; }
+
+        .manage-actions { display: flex; gap: 0.5rem; }
+        .btn-manage {
+            border: 1px solid #444; background: #222; color: #ccc; width: 35px; height: 35px;
+            cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.2s;
+        }
+        .btn-manage:hover { color: white; border-color: white; }
+        .btn-delete:hover { background: #7f1d1d; border-color: #ef4444; }
+        .btn-edit:hover { background: #1e3a8a; border-color: #60a5fa; }
+        .btn-view:hover { background: #d97706; border-color: #fbbf24; color: white; }
+        .btn-accept:hover { background: #10b981; border-color: #34d399; color: white; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: #111; border: 1px solid #444; max-width: 600px; width: 90%; padding: 2rem; border-radius: 4px; max-height: 90vh; overflow-y: auto; position: relative; }
+        .close-modal { position: absolute; top: 10px; right: 15px; font-size: 1.5rem; color: #777; cursor: pointer; }
+
+        .toast {
+            position: fixed; bottom: 20px; right: 20px; background: #10b981; color: white; padding: 1rem 2rem;
+            border-radius: 4px; font-family: 'Cinzel', serif; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            transform: translateY(100px); transition: transform 0.3s; z-index: 2000;
+        }
+        .toast.show { transform: translateY(0); }
+        
+        .connection-status { font-size: 0.8rem; color: #666; margin-left: 1rem; }
+        .connection-status.online { color: #10b981; }
+        .rich-editor-toolbar { display: flex; gap: 5px; background: #222; border: 1px solid #444; border-bottom: none; padding: 5px; }
+        .toolbar-btn { background: #333; border: 1px solid #444; color: #ccc; width: 30px; height: 30px; cursor: pointer; font-weight: bold; }
+        .rich-editor { width: 100%; min-height: 200px; background-color: #0a0a0a; border: 1px solid #444; color: white; padding: 1rem; overflow-y: auto; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="flex items-center gap-4">
+            <h1 class="header-title"><i class="fa-solid fa-feather-pointed"></i> Gestor do Acervo</h1>
+            <span id="connStatus" class="connection-status"><i class="fa-solid fa-circle-notch fa-spin"></i> Conectando...</span>
+        </div>
+        <div class="flex gap-4">
+            <a href="acervo.html" class="btn-back"><i class="fa-solid fa-eye"></i> Ver Acervo</a>
+            <a href="index.html" class="btn-back"><i class="fa-solid fa-home"></i> Home</a>
+        </div>
+    </header>
+
+    <nav class="tabs-container">
+        <button class="tab-btn active" onclick="openTab('gerenciar')">Gerenciar Conteúdo</button>
+        <button class="tab-btn" onclick="openTab('solicitacoes')">Solicitações</button>
+        <button class="tab-btn" onclick="openTab('oponente')">Publicar Oponente</button>
+        <button class="tab-btn" onclick="openTab('regra')">Publicar Regra</button>
+        <button class="tab-btn" onclick="openTab('ee')">Publicar E.E.</button>
+    </nav>
+
+    <main>
+        <!-- GERENCIAR -->
+        <div id="tab-gerenciar" class="tab-content active">
+            <h2 class="font-gothic text-2xl mb-6 text-gray-300">Acervo Publicado</h2>
+            <input type="text" id="manage-search" placeholder="Filtrar por título..." onkeyup="renderManageList()" style="margin-bottom: 1.5rem;">
+            <div id="manage-list" class="form-card" style="padding: 1rem;"><p class="text-center text-gray-600">Carregando...</p></div>
+        </div>
+
+        <!-- SOLICITAÇÕES -->
+        <div id="tab-solicitacoes" class="tab-content">
+            <h2 class="font-gothic text-2xl mb-6 text-gray-400">Solicitações Pendentes</h2>
+            <div id="requests-list" class="form-card">
+                <p class="text-center text-gray-600">Carregando solicitações...</p>
+            </div>
+        </div>
+
+        <!-- OPONENTE -->
+        <div id="tab-oponente" class="tab-content">
+            <h2 class="font-gothic text-2xl mb-6 text-red-400" id="op-header">Publicar Novo Oponente</h2>
+            <div class="form-card" style="border-top: 3px solid var(--accent-red);">
+                <div class="form-group">
+                    <label>Cole o JSON (Gerado na Forja)</label>
+                    <textarea id="op-json" rows="8" placeholder='{ "nome": "...", ... }'></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Autor</label>
+                    <input type="text" id="op-author">
+                </div>
+                <button id="btn-op-publish" class="btn-publish" onclick="handlePublish('oponentes')"><i class="fa-solid fa-skull mr-2"></i> <span>Adicionar</span></button>
+                <button id="btn-op-cancel" class="btn-publish" onclick="cancelEdit()" style="display:none; background:#333; border-color:#666; color:#aaa; margin-top:10px;">Cancelar</button>
+            </div>
+        </div>
+
+        <!-- REGRA -->
+        <div id="tab-regra" class="tab-content">
+            <h2 class="font-gothic text-2xl mb-6 text-gray-300" id="regra-header">Publicar Nova Regra</h2>
+            <div class="form-card" style="border-top: 3px solid var(--accent-silver);">
+                <div class="form-group"><label>Título</label><input type="text" id="regra-title"></div>
+                <div class="form-group"><label>Tag</label><input type="text" id="regra-tag"></div>
+                <div class="form-group"><label>Resumo</label><textarea id="regra-desc" rows="2"></textarea></div>
+                <div class="form-group">
+                    <label>Conteúdo</label>
+                    <div class="rich-editor-toolbar">
+                        <button class="toolbar-btn" onclick="execCmd('bold')">B</button>
+                        <button class="toolbar-btn" onclick="execCmd('italic')">I</button>
+                        <button class="toolbar-btn" onclick="execCmd('insertUnorderedList')">•</button>
+                    </div>
+                    <div id="regra-content" class="rich-editor" contenteditable="true"></div>
+                </div>
+                <button id="btn-regra-publish" class="btn-publish" onclick="handlePublish('regras')"><i class="fa-solid fa-scroll mr-2"></i> <span>Publicar</span></button>
+                <button id="btn-regra-cancel" class="btn-publish" onclick="cancelEdit()" style="display:none; background:#333; border-color:#666; color:#aaa; margin-top:10px;">Cancelar</button>
+            </div>
+        </div>
+
+        <!-- E.E -->
+        <div id="tab-ee" class="tab-content">
+            <h2 class="font-gothic text-2xl mb-6 text-purple-400" id="ee-header">Publicar Efeito Especial</h2>
+            <div class="form-card" style="border-top: 3px solid var(--accent-purple);">
+                <div class="form-group"><label>Título</label><input type="text" id="ee-title"></div>
+                <div class="form-group"><label>Tag</label><input type="text" id="ee-tag"></div>
+                <div class="form-group"><label>Descrição Curta</label><textarea id="ee-desc" rows="2"></textarea></div>
+                <div class="form-group">
+                    <label>Texto Completo</label>
+                    <div class="rich-editor-toolbar">
+                        <button class="toolbar-btn" onclick="execCmd('bold')">B</button>
+                        <button class="toolbar-btn" onclick="execCmd('italic')">I</button>
+                    </div>
+                    <div id="ee-content" class="rich-editor" contenteditable="true"></div>
+                </div>
+                <button id="btn-ee-publish" class="btn-publish" onclick="handlePublish('efeitos')"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i> <span>Publicar</span></button>
+                <button id="btn-ee-cancel" class="btn-publish" onclick="cancelEdit()" style="display:none; background:#333; border-color:#666; color:#aaa; margin-top:10px;">Cancelar</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL DE PREVIEW -->
+    <div id="previewModal" class="modal-overlay" onclick="document.getElementById('previewModal').style.display='none'">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-modal" onclick="document.getElementById('previewModal').style.display='none'">&times;</span>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"><i class="fa-solid fa-check-circle"></i> Ação realizada!</div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC0OIN2Q0-4fBAlxMmrJ01_X7wtS4j5yWs",
+            authDomain: "site-estorias.firebaseapp.com",
+            projectId: "site-estorias",
+            storageBucket: "site-estorias.firebasestorage.app",
+            messagingSenderId: "638249584272",
+            appId: "1:638249584272:web:042099dcd5ad00ffb13a15"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const statusEl = document.getElementById('connStatus');
+
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try { await signInWithCustomToken(auth, __initial_auth_token); } 
+                    catch (e) { await signInAnonymously(auth); }
+                } else { await signInAnonymously(auth); }
+            } catch (error) { console.error("Erro Auth:", error); statusEl.innerText = "Erro Auth"; }
+        };
+        initAuth();
+
+        window.managerData = [];
+        window.requestsData = [];
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                statusEl.innerText = "Online"; statusEl.style.color = "green";
+                window.db = db; 
+                // Aqui apenas definimos a referência à coleção, não chamamos ela
+                window.db_collection = collection(db, "acervo_conteudo");
+                window.db_requests_collection = collection(db, "acervo_solicitacoes");
+                window.db_doc = doc;
+                window.db_delete = deleteDoc;
+                window.db_update = updateDoc;
+                window.db_add = addDoc;
+
+                const q = query(window.db_collection, orderBy("timestamp", "desc"));
+                onSnapshot(q, (snapshot) => {
+                    window.managerData = [];
+                    snapshot.forEach((doc) => { window.managerData.push({ id: doc.id, ...doc.data() }); });
+                    window.renderManageList();
+                });
+
+                const qReq = query(window.db_requests_collection, orderBy("timestamp", "desc"));
+                onSnapshot(qReq, (snapshot) => {
+                    window.requestsData = [];
+                    snapshot.forEach((doc) => { window.requestsData.push({ id: doc.id, ...doc.data() }); });
+                    window.renderRequestsList();
+                });
+
+            } else { statusEl.innerText = "Offline"; }
+        });
+    </script>
+
+    <script>
+        let currentEditingId = null;
+        let pendingRequestId = null; 
+
+        function renderManageList() {
+            if (!window.managerData) return;
+            const listEl = document.getElementById('manage-list');
+            const searchTerm = document.getElementById('manage-search').value.toLowerCase();
+            listEl.innerHTML = '';
+
+            const filtered = window.managerData.filter(item => 
+                (item.title || '').toLowerCase().includes(searchTerm) || (item.tag || '').toLowerCase().includes(searchTerm)
+            );
+
+            if(filtered.length === 0) { listEl.innerHTML = '<p class="text-center text-gray-600">Nenhum item encontrado.</p>'; return; }
+
+            filtered.forEach(item => {
+                const div = document.createElement('div');
+                div.className = `manage-item type-${item.type} ${item.hidden ? 'hidden-item' : ''}`;
+                let icon = item.type === 'oponentes' ? 'fa-skull' : (item.type === 'efeitos' ? 'fa-wand-magic-sparkles' : 'fa-scroll');
+
+                div.innerHTML = `
+                    <div>
+                        <strong style="color:#d1d5db"><i class="fa-solid ${icon} mr-2"></i> ${item.title}</strong>
+                        <span style="color:#666; font-size:0.8rem; margin-left:10px;">[${item.tag}]</span>
+                        ${item.hidden ? '<span style="color:#ef4444; font-size:0.7rem; border:1px solid #ef4444; padding:2px 4px; border-radius:3px; margin-left:5px;">OCULTO</span>' : ''}
+                    </div>
+                    <div class="manage-actions">
+                        <button class="btn-manage btn-view" onclick="previewContent('${item.id}', 'published')" title="Visualizar"><i class="fa-solid fa-eye"></i></button>
+                        <button class="btn-manage btn-edit" onclick="startEdit('${item.id}')" title="Editar"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn-manage" onclick="toggleVisibility('${item.id}', ${item.hidden || false})" title="${item.hidden ? 'Revelar' : 'Ocultar'}"><i class="fa-solid ${item.hidden ? 'fa-eye' : 'fa-eye-slash'}"></i></button>
+                        <button class="btn-manage btn-delete" onclick="deleteContent('${item.id}', '${item.title}')" title="Excluir"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                listEl.appendChild(div);
+            });
+        }
+
+        function renderRequestsList() {
+            if (!window.requestsData) return;
+            const listEl = document.getElementById('requests-list');
+            listEl.innerHTML = '';
+
+            if(window.requestsData.length === 0) {
+                listEl.innerHTML = '<p class="text-center text-gray-600">Nenhuma nova solicitação encontrada.</p>';
+                return;
+            }
+
+            window.requestsData.forEach(item => {
+                const div = document.createElement('div');
+                div.className = `manage-item type-${item.type}`;
+                let icon = 'fa-skull';
+
+                div.innerHTML = `
+                    <div>
+                        <strong style="color:#d1d5db"><i class="fa-solid ${icon} mr-2"></i> ${item.title}</strong>
+                        <span style="color:#666; font-size:0.8rem; margin-left:10px;">Solicitado em: ${item.timestamp ? new Date(item.timestamp.seconds * 1000).toLocaleDateString() : 'Data desc.'}</span>
+                    </div>
+                    <div class="manage-actions">
+                        <button class="btn-manage btn-view" onclick="previewContent('${item.id}', 'request')" title="Visualizar"><i class="fa-solid fa-eye"></i></button>
+                        <button class="btn-manage btn-accept" onclick="loadRequestForReview('${item.id}')" title="Revisar e Publicar"><i class="fa-solid fa-check"></i></button>
+                        <button class="btn-manage btn-delete" onclick="rejectRequest('${item.id}', '${item.title}')" title="Rejeitar"><i class="fa-solid fa-times"></i></button>
+                    </div>
+                `;
+                listEl.appendChild(div);
+            });
+        }
+
+        function loadRequestForReview(id) {
+            const item = window.requestsData.find(i => i.id === id);
+            if(!item) return;
+
+            document.getElementById('op-json').value = item.rawJson || "// Erro: JSON não encontrado.";
+            let authorName = "";
+            try { const parsed = JSON.parse(item.rawJson); authorName = parsed.autor || ""; } catch(e){}
+            document.getElementById('op-author').value = authorName;
+
+            pendingRequestId = id; 
+            openTab('oponente');
+            
+            const btnPublish = document.getElementById('btn-op-publish');
+            const btnCancel = document.getElementById('btn-op-cancel');
+            btnPublish.querySelector('span').innerText = "Aprovar e Publicar";
+            btnPublish.classList.add('editing');
+            btnCancel.style.display = 'block';
+        }
+
+        async function rejectRequest(id, title) {
+            if(!confirm(`Rejeitar e apagar solicitação "${title}"?`)) return;
+            try { await window.db_delete(window.db_doc(window.db, "acervo_solicitacoes", id)); showToast("Solicitação removida."); }
+            catch(e) { alert("Erro: " + e.message); }
+        }
+
+        function previewContent(id, source) {
+            const list = source === 'published' ? window.managerData : window.requestsData;
+            const item = list.find(i => i.id === id);
+            if(!item) return;
+            const body = document.getElementById('modalBody');
+            
+            body.innerHTML = `
+                <h2 class="font-gothic text-2xl mb-2 text-white">${item.title}</h2>
+                <div class="text-gray-300 text-lg leading-relaxed font-serif">
+                    <div class="p-4 bg-gray-900 border border-gray-800 rounded">
+                        ${item.fullText || "Sem detalhes."}
+                    </div>
+                </div>
+            `;
+            document.getElementById('previewModal').style.display = 'flex';
+        }
+
+        async function deleteContent(id, title) {
+            if(!confirm(`Excluir "${title}" permanentemente?`)) return;
+            try { await window.db_delete(window.db_doc(window.db, "acervo_conteudo", id)); showToast("Item excluído."); } 
+            catch(e) { alert("Erro: " + e.message); }
+        }
+
+        async function toggleVisibility(id, currentStatus) {
+            try { await window.db_update(window.db_doc(window.db, "acervo_conteudo", id), { hidden: !currentStatus }); showToast(currentStatus ? "Item revelado." : "Item ocultado."); }
+            catch(e) { alert("Erro: " + e.message); }
+        }
+
+        function startEdit(id) {
+            const item = window.managerData.find(i => i.id === id);
+            if(!item) return;
+            currentEditingId = id;
+            pendingRequestId = null;
+
+            if(item.type === 'oponentes') {
+                document.getElementById('op-json').value = item.rawJson || `// JSON não encontrado.`;
+                document.getElementById('op-author').value = item.author || "";
+                openTab('oponente'); setupEditMode('op', true);
+            } 
+            else if (item.type === 'regras') {
+                document.getElementById('regra-title').value = item.title;
+                document.getElementById('regra-tag').value = item.tag;
+                document.getElementById('regra-desc').value = item.desc;
+                document.getElementById('regra-content').innerHTML = item.fullText;
+                openTab('regra'); setupEditMode('regra', true);
+            }
+            else if (item.type === 'efeitos') {
+                document.getElementById('ee-title').value = item.title;
+                document.getElementById('ee-tag').value = item.tag;
+                document.getElementById('ee-desc').value = item.desc;
+                document.getElementById('ee-content').innerHTML = item.fullText;
+                openTab('ee'); setupEditMode('ee', true);
+            }
+        }
+
+        function setupEditMode(prefix, isEditing) {
+            const btnPublish = document.getElementById(`btn-${prefix}-publish`);
+            const btnCancel = document.getElementById(`btn-${prefix}-cancel`);
+            if(isEditing) {
+                btnPublish.querySelector('span').innerText = "Salvar Alterações";
+                btnPublish.classList.add('editing');
+                btnCancel.style.display = 'block';
+            } else {
+                btnPublish.querySelector('span').innerText = prefix === 'op' ? "Adicionar" : "Publicar";
+                btnPublish.classList.remove('editing');
+                btnCancel.style.display = 'none';
+                currentEditingId = null;
+                if(prefix === 'op') { document.getElementById('op-json').value=''; document.getElementById('op-author').value=''; }
+                else {
+                    document.getElementById(`${prefix}-title`).value=''; document.getElementById(`${prefix}-tag`).value='';
+                    document.getElementById(`${prefix}-desc`).value=''; document.getElementById(`${prefix}-content`).innerHTML='';
+                }
+            }
+        }
+
+        function cancelEdit() {
+            setupEditMode('op', false); setupEditMode('regra', false); setupEditMode('ee', false);
+            pendingRequestId = null;
+            openTab('gerenciar');
+        }
+
+        async function handlePublish(type) {
+            if(!window.db) { alert("Sem conexão."); return; }
+            let newItem = {};
+            let prefix = '';
+
+            if(type === 'oponentes') {
+                prefix = 'op';
+                const jsonText = document.getElementById('op-json').value;
+                const author = document.getElementById('op-author').value;
+                if(!jsonText) { alert("Cole o JSON."); return; }
+                try {
+                    const opData = JSON.parse(jsonText);
+                    
+                    let newHtml = "";
+                    if (pendingRequestId) {
+                        const reqItem = window.requestsData.find(i => i.id === pendingRequestId);
+                        if (reqItem && reqItem.rawJson === jsonText) {
+                            newHtml = reqItem.fullText;
+                        } else {
+                            newHtml = `<div style="color:#ccc;"><h3>${opData.nome}</h3><p>${opData.descricao}</p><p><em>Visual simplificado (Edição Manual).</em></p></div>`;
+                        }
+                    } else if (currentEditingId) {
+                         const oldItem = window.managerData.find(i => i.id === currentEditingId);
+                         if (oldItem && oldItem.rawJson === jsonText) newHtml = oldItem.fullText;
+                         else newHtml = `<div style="color:#ccc;"><h3>${opData.nome}</h3><p>${opData.descricao}</p></div>`;
+                    } else {
+                        newHtml = `<div style="color:#ccc;"><h3>${opData.nome}</h3><p>${opData.descricao}</p></div>`;
+                    }
+
+                    newItem = {
+                        type: 'oponentes', title: opData.nome, tag: opData.tag || opData.papel,
+                        desc: `${opData.tamanho} - ${opData.papel}`, fullText: newHtml,
+                        rawJson: jsonText, author: author, timestamp: new Date()
+                    };
+                    
+                } catch(e) { alert("JSON Inválido."); return; }
+            } else {
+                prefix = type === 'regras' ? 'regra' : 'ee';
+                const title = document.getElementById(`${prefix}-title`).value;
+                const content = document.getElementById(`${prefix}-content`).innerHTML;
+                if(!title || !content) { alert("Preencha tudo."); return; }
+                newItem = {
+                    type: type, title: title, tag: document.getElementById(`${prefix}-tag`).value || 'Geral',
+                    desc: document.getElementById(`${prefix}-desc`).value || '...', fullText: content, timestamp: new Date()
+                };
+            }
+
+            try {
+                if(currentEditingId) {
+                    // MODO EDIÇÃO (Update)
+                    await window.db_update(window.db_doc(window.db, "acervo_conteudo", currentEditingId), newItem);
+                    showToast("Item atualizado!"); 
+                    cancelEdit();
+                } 
+                else if (pendingRequestId) {
+                    // MODO APROVAÇÃO: Adiciona ao acervo, remove da solicitação
+                    newItem.hidden = false;
+                    
+                    // AQUI FOI O FIX: passamos window.db_collection diretamente (é um objeto Reference)
+                    await window.db_add(window.db_collection, newItem);
+                    
+                    await window.db_delete(window.db_doc(window.db, "acervo_solicitacoes", pendingRequestId));
+                    
+                    showToast("Solicitação Aprovada e Publicada!");
+                    pendingRequestId = null;
+                    setupEditMode(prefix, false);
+                    openTab('solicitacoes');
+                }
+                else {
+                    // MODO CRIAÇÃO MANUAL (Add)
+                    newItem.hidden = false;
+                    // FIX: window.db_collection é um objeto, não chame como função
+                    await window.db_add(window.db_collection, newItem);
+                    showToast("Publicado!"); setupEditMode(prefix, false);
+                }
+            } catch(e) { alert("Erro: " + e.message); }
+        }
+
+        function openTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            const map = {'gerenciar':0, 'solicitacoes':1, 'oponente':2, 'regra':3, 'ee':4};
+            const buttons = document.querySelectorAll('.tab-btn');
+            if(buttons[map[tabName]]) buttons[map[tabName]].classList.add('active');
+        }
+
+        function execCmd(command) { document.execCommand(command, false, null); }
+        function showToast(msg) {
+            const toast = document.getElementById('toast'); toast.innerHTML = `<i class="fa-solid fa-check-circle"></i> ${msg}`;
+            toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+</html>
