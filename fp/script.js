@@ -7,6 +7,9 @@ let bulletinBoardCollection;
 let bulletinStateRef;
 let appInitialized = false; // Trava para não rodar listeners sem firebase
 
+// --- VARIÁVEIS DE CONTROLE DE SINCRONIA ---
+let lastServerConditionsJSON = '[]'; // Guarda o último estado conhecido do servidor para evitar loops
+
 // --- FUNÇÃO 1: TENTA INICIAR AUTOMATICAMENTE ---
 function checkFirebaseConfig() {
     const savedConfig = localStorage.getItem('rpg_firebase_config');
@@ -31,14 +34,11 @@ function openFirebaseModal() {
     if (modal) {
         modal.style.display = 'flex';
         
-        // --- MELHORIA: Permite fechar o modal (Modo Offline) ---
-        // Verifica se já existe um botão de fechar, se não, cria um dinamicamente
         let closeBtn = modal.querySelector('.js-close-firebase');
         if (!closeBtn) {
             closeBtn = document.createElement('button');
             closeBtn.className = 'js-close-firebase';
-            closeBtn.innerHTML = '&times;'; // X symbol
-            // Estilo para garantir que fique no topo direito
+            closeBtn.innerHTML = '&times;'; 
             Object.assign(closeBtn.style, {
                 position: 'absolute',
                 top: '10px',
@@ -53,7 +53,6 @@ function openFirebaseModal() {
             });
             closeBtn.onclick = closeFirebaseModal;
             
-            // Adiciona ao container interno se possível, ou ao modal direto
             const innerContainer = modal.querySelector('.modal-container') || modal.querySelector('div') || modal;
             if (window.getComputedStyle(innerContainer).position === 'static') {
                 innerContainer.style.position = 'relative';
@@ -61,7 +60,6 @@ function openFirebaseModal() {
             innerContainer.appendChild(closeBtn);
         }
 
-        // Fecha ao clicar fora (Overlay)
         modal.onclick = function(e) {
             if (e.target === modal) closeFirebaseModal();
         };
@@ -88,15 +86,9 @@ function handleKeyFileSelect(event) {
             const configText = e.target.result;
             const config = JSON.parse(configText);
             
-            // Validação simples para ver se parece uma chave do firebase
             if (config.apiKey && config.projectId) {
-                // Salva no navegador
                 localStorage.setItem('rpg_firebase_config', JSON.stringify(config));
-                
-                // Fecha modal
                 closeFirebaseModal();
-                
-                // Inicializa
                 initializeFirebase(config);
             } else {
                 alert("Arquivo JSON inválido. Não parece conter uma chave do Firebase.");
@@ -107,7 +99,7 @@ function handleKeyFileSelect(event) {
         }
     };
     reader.readAsText(file);
-    event.target.value = ''; // Limpa o input para poder carregar o mesmo arquivo de novo
+    event.target.value = ''; 
 }
 
 
@@ -134,13 +126,8 @@ function saveAndConnectFirebase() {
         appId
     };
 
-    // Salva no navegador
     localStorage.setItem('rpg_firebase_config', JSON.stringify(config));
-    
-    // Fecha modal
     closeFirebaseModal();
-    
-    // Inicializa
     initializeFirebase(config);
 }
 
@@ -148,7 +135,7 @@ function saveAndConnectFirebase() {
 function clearFirebaseConfig() {
     if(confirm("Deseja desconectar e apagar as configurações salvas deste navegador?")) {
         localStorage.removeItem('rpg_firebase_config');
-        location.reload(); // Recarrega a página para resetar
+        location.reload(); 
     }
 }
 
@@ -157,13 +144,11 @@ function initializeFirebase(config) {
     if (firebase.apps.length === 0) {
         firebase.initializeApp(config);
     } else {
-        // Se já existe app (caso raro de re-init), usa o existente ou deleta
         firebase.app(); 
     }
 
     db = firebase.firestore();
     
-    // Configura as coleções globais agora que o DB existe
     messagesCollection = db.collection('chat_messages');
     playersCollection = db.collection('players');
     mapCollection = db.collection('maps').doc('main_map');
@@ -173,13 +158,13 @@ function initializeFirebase(config) {
     appInitialized = true;
     console.log("Firebase conectado com sucesso!");
 
-    // --- AQUI INICIAMOS OS LISTENERS QUE DEPENDEM DO FIREBASE ---
-    // Chama as funções que antes rodavam soltas no load
+    // LISTENERS
     listenForMapChanges();
     listenForBulletinState();
     listenForBulletinMessages();
     listenForMessages();
-    startPresenceSystem(); // Se já tiver nome na ficha, ele começa a sincronizar
+    listenForSyncSignal(); // Escuta o "Resetar Sessão" do mestre
+    startPresenceSystem(); 
 }
 
         // --- DATA ---
@@ -280,28 +265,24 @@ function initializeFirebase(config) {
             document.getElementById('map-modal').style.display = 'none';
         }
         
-        // --- NOVO: Função para renderizar o Ping vindo do Firebase ---
         function renderPing(x, y) {
             const mapTokensContainer = document.getElementById('map-tokens');
-            if (!mapTokensContainer) return; // Segurança
+            if (!mapTokensContainer) return; 
 
-            // Cria o elemento visual do ping
             const pingEl = document.createElement('div');
-            pingEl.className = 'map-ping-target'; // O CSS DEVE EXISTIR NO fp.html
+            pingEl.className = 'map-ping-target'; 
             pingEl.style.left = `${x}px`;
             pingEl.style.top = `${y}px`;
 
-            // Adiciona ao container de tokens
             mapTokensContainer.appendChild(pingEl);
 
-            // Remove após 8 segundos
             setTimeout(() => {
                 pingEl.remove();
             }, 8000);
         }
 
         function updateTokenPosition(playerName, x, y) {
-            if (!appInitialized) return; // OFFLINE PROTECTION
+            if (!appInitialized) return; 
 
             const charName = document.getElementById('char-name').value.trim();
             if (playerName !== charName) return;
@@ -313,7 +294,7 @@ function initializeFirebase(config) {
         }
 
         function listenForMapChanges() {
-            if (!appInitialized) return; // OFFLINE PROTECTION
+            if (!appInitialized) return; 
             if (unsubscribeMapListener) unsubscribeMapListener();
 
             unsubscribeMapListener = mapCollection.onSnapshot(doc => {
@@ -339,16 +320,13 @@ function initializeFirebase(config) {
                     mapContainer.style.backgroundImage = 'none';
                 }
 
-                // --- NOVO: Lógica do Ping ---
                 if (mapData.ping && mapData.ping.timestamp) {
-                    // Tenta converter toMillis(), se falhar (ex: é um ServerTimestamp local), usa Date.now()
                     const serverTimestamp = mapData.ping.timestamp.toMillis ? mapData.ping.timestamp.toMillis() : Date.now();
                     if (serverTimestamp > (lastPingTimestamp || 0)) {
                         lastPingTimestamp = serverTimestamp;
                         renderPing(mapData.ping.x, mapData.ping.y);
                     }
                 }
-                // --- Fim da Lógica do Ping ---
 
                 tokensContainer.innerHTML = '';
                 const tokens = mapData.tokens || {};
@@ -478,7 +456,7 @@ function initializeFirebase(config) {
         }
 
         function listenForBulletinState() {
-            if (!appInitialized) return; // OFFLINE PROTECTION
+            if (!appInitialized) return; 
             bulletinStateRef.onSnapshot(doc => {
                 if (doc.exists) {
                     const data = doc.data();
@@ -497,7 +475,7 @@ function initializeFirebase(config) {
         }
 
         function listenForBulletinMessages() {
-            if (!appInitialized) return; // OFFLINE PROTECTION
+            if (!appInitialized) return; 
             const messagesContainer = document.getElementById('bulletin-board-messages');
             
             bulletinBoardCollection.orderBy('timestamp', 'desc').onSnapshot(snapshot => {
@@ -528,7 +506,6 @@ function initializeFirebase(config) {
                             <span class="timestamp">${date}</span>
                         `;
                     } else {
-                        // Mensagem normal (lógica de combate removida)
                         msgElement.className = 'bulletin-message';
                         let contentHTML = '';
                         if (msg.text) {
@@ -599,8 +576,7 @@ function initializeFirebase(config) {
         }
 
         async function sendMessage(messageData) {
-            if (!appInitialized) { // OFFLINE PROTECTION
-                // Se estiver offline, apenas mostra localmente como 'sistema' para feedback
+            if (!appInitialized) { 
                 const messagesContainer = document.getElementById('chat-messages');
                 const msgElement = document.createElement('div');
                 msgElement.className = 'chat-message-system';
@@ -635,7 +611,7 @@ function initializeFirebase(config) {
         }
 
         function listenForMessages() {
-            if (!appInitialized) return; // OFFLINE PROTECTION
+            if (!appInitialized) return; 
             const messagesContainer = document.getElementById('chat-messages');
             const listenerTimestamp = new Date();
 
@@ -794,12 +770,14 @@ function initializeFirebase(config) {
         function setupAttributeRolls() {
             attributeIds.forEach(attr => {
                 const label = document.getElementById(`label-${attr}`);
-                label.addEventListener('click', () => {
-                    const input = document.getElementById(attr);
-                    const value = parseInt(input.value) || 0;
-                    const name = label.textContent.trim().split(' ')[0];
-                    openRollModal(attr, name, value);
-                });
+                if (label) {
+                    label.addEventListener('click', () => {
+                        const input = document.getElementById(attr);
+                        const value = parseInt(input.value) || 0;
+                        const name = label.textContent.trim().split(' ')[0];
+                        openRollModal(attr, name, value);
+                    });
+                }
             });
         }
 
@@ -812,8 +790,8 @@ function initializeFirebase(config) {
             let newValue = currentValue + amount;
 
             if (id.includes('vigor')) {
-                const maxVigor = parseInt(document.getElementById('vigor-max').textContent, 10) || 0;
-                if (newValue > maxVigor) newValue = maxVigor;
+                // Removemos a limitação estrita aqui, deixamos o usuário subir se quiser
+                // Apenas impedimos negativo
             } else if (isResource) {
                 const maxEl = document.getElementById(`resource-total-${resourceId}`);
                 const maxValue = parseInt(maxEl.value) || 0;
@@ -1004,10 +982,11 @@ function initializeFirebase(config) {
             const fortitudeValue = parseInt(fortitudeInput.value, 10) || 0;
             const newMaxVigor = 6 + fortitudeValue;
 
+            // BUG FIX 2: Apenas sugere o máximo no display
             vigorMaxDisplay.textContent = newMaxVigor;
             
-            const currentVigor = parseInt(vigorInput.value, 10);
-            if (isNaN(currentVigor) || currentVigor > newMaxVigor || vigorInput.value === "") {
+            // Se o vigor estiver vazio, iniciamos com o máximo, mas não forçamos se o usuário já digitou algo
+            if (vigorInput.value === "") {
                 vigorInput.value = newMaxVigor;
             }
             updateVigorBar();
@@ -1623,6 +1602,19 @@ function initializeFirebase(config) {
             sendMessage({ text: messageText });
         }
 
+        // --- NOVO: Escutar sinal de reset do mestre ---
+        function listenForSyncSignal() {
+            if (!appInitialized) return;
+            // Escuta um documento global de "sinal"
+            db.collection('game_state').doc('sync_signal').onSnapshot(doc => {
+                if(doc.exists) {
+                    // Se o documento existe e foi atualizado recentemente (poderíamos checar timestamp, 
+                    // mas como é só um "trigger" para update, rodar updatePresence de novo não faz mal)
+                    console.log("Sinal de sincronização recebido do mestre.");
+                    updatePresence();
+                }
+            });
+        }
 
         // --- PLAYER PRESENCE & REAL-TIME SYNC ---
         function updatePresence() {
@@ -1631,13 +1623,31 @@ function initializeFirebase(config) {
             const charName = document.getElementById('char-name').value.trim();
             if (!charName) return;
 
-            // MODIFICADO: Agora envia todos os dados de combate.
+            const currentConditions = [];
+            document.querySelectorAll('#conditions-container input:checked').forEach(checkbox => {
+                currentConditions.push(checkbox.id);
+            });
+
+            // Ordena para garantir comparação consistente
+            const currentJson = JSON.stringify(currentConditions.sort());
+
+            // BUG FIX 1: Compatibilidade com Gerenciador de Players
+            // O novo gerenciador espera "avatar", "vigor" e "maxVigor" na raiz do objeto.
             const playerData = {
                 version: 'v36_player_combat',
                 theme: localStorage.getItem('characterSheetTheme') || 'onenari',
                 charName: charName,
+                
+                // Mapeia image -> avatar para o gerenciador novo
+                avatar: document.getElementById('image-preview').src, 
                 image: document.getElementById('image-preview').src,
-                combatImage: document.getElementById('combat-image-preview').src, // Imagem de Combate
+                
+                combatImage: document.getElementById('combat-image-preview').src,
+                
+                // Dados vitais na raiz para fácil acesso do gerenciador
+                vigor: parseInt(document.getElementById('vigor').value) || 0,
+                maxVigor: parseInt(document.getElementById('vigor-max').textContent) || 10,
+
                 attributes: {
                     destreza: document.getElementById('destreza').value,
                     forca: document.getElementById('forca').value,
@@ -1651,18 +1661,17 @@ function initializeFirebase(config) {
                     estresse: document.getElementById('estresse').value,
                 },
 
-                conditions: [], // Condições
+                // conditions: (REMOVIDO DAQUI)
                 last_seen: firebase.firestore.FieldValue.serverTimestamp()
             };
 
+            // BUG FIX 4: SÓ ENVIAR CONDIÇÕES SE ELAS MUDARAM LOCALMENTE
+            // Isso evita que o intervalo de "estou vivo" (60s) sobrescreva 
+            // uma mudança que o mestre acabou de fazer no banco.
+            if (currentJson !== lastServerConditionsJSON) {
+                playerData.conditions = currentConditions;
+            }
 
-
-            // Coletar Condições
-            document.querySelectorAll('#conditions-container input:checked').forEach(checkbox => {
-                playerData.conditions.push(checkbox.id);
-            });
-
-            // Envia os dados completos para o Firestore
             playersCollection.doc(charName).set(playerData, { merge: true });
         }
 
@@ -1689,14 +1698,22 @@ function initializeFirebase(config) {
                 const data = doc.data();
 
                 const localVigor = parseInt(document.getElementById('vigor').value);
-                if (data.vigor !== localVigor) {
+                // Evita loop infinito se a diferença for só visual
+                if (data.vigor !== undefined && data.vigor !== localVigor) {
                     document.getElementById('vigor').value = data.vigor;
                     updateVigorBar();
                 }
 
+                // BUG FIX 5: ATUALIZA O ESTADO GLOBAL DO SERVIDOR
                 const serverConditions = data.conditions || [];
+                // Guarda o estado exato que veio do servidor para evitar reenvio desnecessário
+                lastServerConditionsJSON = JSON.stringify([...serverConditions].sort());
+
                 document.querySelectorAll('#conditions-container input').forEach(cb => {
-                    cb.checked = serverConditions.includes(cb.id);
+                    const shouldCheck = serverConditions.includes(cb.id);
+                    if (cb.checked !== shouldCheck) {
+                        cb.checked = shouldCheck;
+                    }
                 });
                 updateActiveEffects();
             });
@@ -1880,6 +1897,9 @@ function initializeFirebase(config) {
             populateSubTabs();
             updateMaxVigor();
             updateActiveEffects();
+
+            // BUG FIX 3: Configurar clique para rolar atributos
+            setupAttributeRolls();
 
             const switcherBtn = document.getElementById('theme-switcher-button');
             const switcherMenu = document.getElementById('theme-switcher-menu');

@@ -1,4 +1,4 @@
- // --- VARIÁVEIS GLOBAIS DO FIREBASE (Inicializadas depois) ---
+// --- VARIÁVEIS GLOBAIS DO FIREBASE (Inicializadas depois) ---
         let db, storage, messagesCollection, playersCollection, bulletinBoardCollection, bulletinStateRef;
         let appInitialized = false;
 
@@ -121,9 +121,8 @@
                 console.log("Painel do Mestre conectado ao Firebase!");
 
                 // --- INICIA OS LISTENERS DO PM ---
-                // (Funções que já existiam no seu script)
                 listenForMessages();
-                listenForOnlinePlayers();
+                // ListenForOnlinePlayers foi removido daqui pois está no dm.html
                 listenForBulletinMessages();
 
             } catch (e) {
@@ -189,7 +188,7 @@
         let isChatOpen = false;
         let isBulletinBoardOpen = false;
         let audioCtx;
-        let unsubscribePlayersListener = null;
+        // let unsubscribePlayersListener = null; // Removido
         let highestZIndex = 151;
         let activeFolderId = 'default';
 
@@ -1114,142 +1113,9 @@
             }
         }
         
-        // --- Painel do Mestre ---
-        function toggleGmPanel() {
-            document.getElementById('gm-panel').classList.toggle('open');
-        }
-
-        function listenForOnlinePlayers(manual = false) {
-            if (!appInitialized) return;
-            if(unsubscribePlayersListener && !manual) return;
-            if(unsubscribePlayersListener) unsubscribePlayersListener();
-
-            const timeFilter = manual ? (1 * 60 * 1000) : (5 * 60 * 1000);
-            const oneMinuteAgo = new Date(Date.now() - timeFilter);
-            
-            unsubscribePlayersListener = playersCollection.where('last_seen', '>', oneMinuteAgo).onSnapshot(snapshot => {
-                const playerListEl = document.getElementById('gm-player-list');
-                playerListEl.innerHTML = '';
-                if (snapshot.empty) {
-                    playerListEl.innerHTML = '<p class="p-4" style="color: var(--color-text-secondary);">Nenhum jogador online.</p>';
-                    return;
-                }
-                snapshot.forEach(doc => {
-                    const player = doc.data();
-                    const playerCard = document.createElement('div');
-                    playerCard.className = 'gm-player-card';
-
-                    const percentage = player.maxVigor > 0 ? Math.max(0, Math.min(100, (player.vigor / player.maxVigor) * 100)) : 0;
-                    let barColor;
-                    if (percentage > 50) barColor = 'var(--color-green)';
-                    else if (percentage > 25) barColor = 'var(--color-accent)';
-                    else barColor = 'var(--color-red)';
-
-                    playerCard.innerHTML = `
-                        <div class="gm-player-info">
-                            <img src="${player.avatar || 'https://placehold.co/50x50/222222/888888?text=?'}" class="gm-player-avatar" alt="Avatar">
-                            <div class="flex-grow">
-                                <span class="gm-player-name">${player.charName}</span>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <button class="gm-control-btn" onclick="gmUpdatePlayerVigor('${player.charName}', -1)" title="Diminuir Vigor">-</button>
-                                    <button class="gm-control-btn" onclick="gmUpdatePlayerVigor('${player.charName}', 1)" title="Aumentar Vigor">+</button>
-                                    <button class="gm-control-btn" onclick="openConditionModal('${player.charName}')" title="Atribuir Condições">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0M4.402 4.145c.223.384.467.802.73 1.252.264.45.546.92.841 1.407l.076.125c.31.51.638.99.98 1.442l.01.014c.324.428.628.81.89 1.133l.09.108c.181.22.327.403.438.545.11-.142.257-.325.438-.545l.09-.108c.262-.323.566-.705.89-1.133l.01-.014c.342-.452.67-.932.98-1.442l.076-.125c.295-.488.577-1.002.842-1.407.263-.45.506-.868.73-1.252a6.51 6.51 0 0 1-1.23 1.062c-.432.32-.88.552-1.296.696l-.06.02a4.6 4.6 0 0 1-1.103.224c-.383.032-.753.02-1.098-.034a4.5 4.5 0 0 1-1.04-.328l-.068-.027c-.45-.188-.882-.48-1.266-.876a6.52 6.52 0 0 1-1.23-1.062h.01zm-3.195 9.71c.432-.32.88-.552 1.296-.696l.06-.02a4.6 4.6 0 0 1 1.103-.224c.383-.032.753-.02 1.098.034.345.054.706.154 1.04.328l.068.027c.45.188.882.48 1.266.876.385.395.71.848.985 1.353a6.51 6.51 0 0 1-1.23-1.062c-.432-.32-.88-.552-1.296-.696l-.06-.02a4.6 4.6 0 0 1-1.103-.224c-.383-.032-.753-.02-1.098-.034a4.5 4.5 0 0 1-1.04-.328l-.068-.027c-.45-.188-.882-.48-1.266-.876a6.52 6.52 0 0 1-1.23-1.062c.224.384.468.802.73 1.252.264.45.546.92.841 1.407.295.488.577 1.002.842 1.407.263.45.506-.868.73 1.252h.01z"/></svg>
-                                    </button>
-                                    <button class="gm-control-btn" onclick="sendPrivateMessage('${player.charName}')" title="Chat Privado">
-                                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.5a1 1 0 0 0-.8.4l-1.9 2.533a1 1 0 0 1-1.6 0L5.3 12.4a1 1 0 0 0-.8-.4H2a2 2 0 0 1-2-2zm3.5 1a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zM3 6a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 2.5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1z"/></svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="w-full h-6 bg-tertiary rounded-full relative overflow-hidden border" style="border-color: var(--color-border);">
-                            <div class="h-full rounded-full transition-all duration-300" style="width: ${percentage}%; background-color: ${barColor};"></div>
-                            <span class="absolute inset-0 flex items-center justify-center font-bold text-white text-sm" style="text-shadow: 1px 1px 2px black;">${player.vigor} / ${player.maxVigor}</span>
-                        </div>
-                    `;
-                    playerListEl.appendChild(playerCard);
-                });
-            });
-        }
-        
-        async function gmUpdatePlayerVigor(charName, amount) {
-            if (!appInitialized) return;
-            const playerDoc = playersCollection.doc(charName);
-            try {
-                await db.runTransaction(async (transaction) => {
-                    const doc = await transaction.get(playerDoc);
-                    if (!doc.exists) return;
-                    const data = doc.data();
-                    let newVigor = (data.vigor || 0) + amount;
-                    if (newVigor < 0) newVigor = 0;
-                    if (newVigor > data.maxVigor) newVigor = data.maxVigor;
-                    transaction.update(playerDoc, { vigor: newVigor });
-                });
-            } catch (e) { console.error("Erro ao atualizar vigor:", e); }
-        }
-        
-        async function openConditionModal(charName) {
-            if (!appInitialized) return;
-            const modal = document.getElementById('gm-condition-modal');
-            modal.style.display = 'flex';
-            bringToFront(modal);
-            document.getElementById('gm-condition-modal-title').textContent = `Atribuir Condições para ${charName}`;
-            
-            const listEl = document.getElementById('gm-condition-list');
-            listEl.innerHTML = 'Carregando...';
-
-            try {
-                const doc = await playersCollection.doc(charName).get();
-                const currentConditions = doc.exists ? (doc.data().conditions || []) : [];
-                
-                listEl.innerHTML = ''; // Limpa o 'Carregando...'
-                const conditions = Object.keys(allConditions)
-                    .filter(key => ['bonus', 'onus'].includes(allConditions[key].type))
-                    .sort((a, b) => allConditions[a].name.localeCompare(allConditions[b].name));
-                
-                conditions.forEach(key => {
-                    const condition = allConditions[key];
-                    const isChecked = currentConditions.includes(key);
-                    const colorClass = condition.type === 'bonus' ? 'text-green-400' : 'text-red-400';
-                    listEl.innerHTML += `
-                        <div class="flex items-center">
-                            <input id="gm-cond-${key}" type="checkbox" class="hidden custom-checkbox" data-cond-key="${key}" ${isChecked ? 'checked' : ''}>
-                            <label for="gm-cond-${key}" class="cursor-pointer select-none transition-colors ${colorClass}">${condition.name}</label>
-                        </div>
-                    `;
-                });
-
-                document.getElementById('gm-condition-save').onclick = () => savePlayerConditions(charName);
-                document.getElementById('gm-condition-cancel').onclick = closeConditionModal;
-
-            } catch(e) { 
-                console.error("Erro ao abrir modal de condições: ", e); 
-                listEl.innerHTML = '<p class="text-red-400">Erro ao carregar condições.</p>';
-            }
-        }
-        function closeConditionModal() { document.getElementById('gm-condition-modal').style.display = 'none'; }
-        async function savePlayerConditions(charName) {
-            if (!appInitialized) return;
-            const selectedConditions = [];
-            document.querySelectorAll('#gm-condition-list input:checked').forEach(checkbox => {
-                selectedConditions.push(checkbox.dataset.condKey);
-            });
-            try {
-                await playersCollection.doc(charName).update({ conditions: selectedConditions });
-                closeConditionModal();
-            } catch (e) { console.error("Erro ao salvar condições:", e); }
-        }
-
-        function sendPrivateMessage(playerName) {
-            const message = prompt(`Mensagem privada para ${playerName}:`);
-            if (message && message.trim() !== '') {
-                sendMessage({ 
-                    text: message.trim(), 
-                    isPrivate: true, 
-                    recipient: playerName 
-                });
-            }
-        }
+        // --- FUNÇÕES ANTIGAS DO PAINEL LATERAL REMOVIDAS ---
+        // (toggleGmPanel, listenForOnlinePlayers, gmUpdatePlayerVigor, openConditionModal, etc.)
+        // Agora o botão apenas abre o dm.html em nova aba via HTML onclick.
 
         // --- GALERIA FUNÇÕES ---
         function renderFolderList() {
@@ -1609,8 +1475,6 @@
                     const msg = doc.data();
                     const msgElement = document.createElement('div');
                     const date = msg.timestamp?.toDate ? msg.timestamp.toDate().toLocaleString('pt-BR') : 'Enviando...';
-
-                    // REMOVIDO: Bloco if (msg.type === 'attribute_test')
                     
                     msgElement.className = 'bulletin-message';
                     let contentHTML = '';
@@ -1648,8 +1512,6 @@
                 alert("Não foi possível notificar os jogadores.");
             }
         }
-        
-        // REMOVIDO: openAttributeRequestModal, closeAttributeRequestModal, sendAttributeTestRequest
 
         function openClearBulletinModal() {
             document.getElementById('clear-bulletin-modal').style.display = 'flex';
@@ -1801,12 +1663,9 @@
             document.getElementById('custom-roll-normal-btn').addEventListener('click', () => handleCustomRoll('normal'));
             document.getElementById('custom-roll-aptidao-btn').addEventListener('click', () => handleCustomRoll('aptidao'));
             document.getElementById('attribute-roll-modal').addEventListener('click', (e) => { if (e.target.id === 'attribute-roll-modal') closeAttributeRollModal(); });
-            // REMOVIDO: listener 'attribute-request-modal'
-
             
-            // Setup Painel do Mestre
-            document.getElementById('gm-panel-button').addEventListener('click', toggleGmPanel);
-            // listenForOnlinePlayers(); // Movido
+            // REMOVIDO: Setup do botão antigo 'gm-panel-button'
+            // O botão agora é gerido diretamente pelo onclick no HTML para abrir dm.html
 
             // Setup Galeria
             renderFolderList();
