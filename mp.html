@@ -205,7 +205,12 @@
                     </nav>
                 </div>
                 <div id="gm-players-tab" class="gm-tab-content active">
-                    <h3 class="text-lg font-bold text-primary mb-4">Jogadores Online</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-primary">Jogadores</h3>
+                        <button id="toggle-offline-players-btn" class="text-xs btn btn-secondary py-1 px-2 border border-color hover:bg-tertiary" title="Filtra jogadores offline">
+                            Ocultar Offline
+                        </button>
+                    </div>
                     <div id="gm-player-list">
                         <p class="text-secondary animate-pulse">Carregando...</p>
                     </div>
@@ -379,6 +384,10 @@
         let isPanning = false;
         let lastPanX = 0;
         let lastPanY = 0;
+
+        // --- GLOBAL STATE para Filtro de Jogadores ---
+        let currentPlayersList = [];
+        let showOnlyOnline = false; // Estado do filtro
 
         function checkFirebaseConfig() {
             const savedConfig = localStorage.getItem('rpg_firebase_config');
@@ -742,19 +751,16 @@
             });
         }
         
-        // --- FUNÇÃO CORRIGIDA PARA SUPORTE A PAN/ZOOM ---
         function makeTokenDraggable(tokenEl, mapWidth, mapHeight, tokenPixelSize) {
             let startMapX, startMapY, tokenStartX, tokenStartY;
             const gridSize = 50;
 
-            // Função auxiliar para converter coordenadas do mouse (Tela) para coordenadas do Mapa (Dentro do Scale/Translate)
             const getMapCoordinates = (clientX, clientY) => {
                  const viewport = document.getElementById('map-viewport');
                  const rect = viewport.getBoundingClientRect();
                  const viewportMouseX = clientX - rect.left;
                  const viewportMouseY = clientY - rect.top;
                  
-                 // Fórmula inversa do Transform: (Mouse - Translate) / Scale
                  return {
                      x: (viewportMouseX - mapTranslateX) / mapScale,
                      y: (viewportMouseY - mapTranslateY) / mapScale
@@ -770,11 +776,9 @@
                 
                 const currentMapPos = getMapCoordinates(clientX, clientY);
                 
-                // Calcula nova posição baseada no Delta inicial
                 let x = currentMapPos.x - startMapX + tokenStartX;
                 let y = currentMapPos.y - startMapY + tokenStartY;
 
-                // Mantém dentro do mapa
                 x = Math.max(0, Math.min(mapWidth - tokenPixelSize, x));
                 y = Math.max(0, Math.min(mapHeight - tokenPixelSize, y));
 
@@ -783,20 +787,18 @@
             };
 
             const startDrag = (e) => {
-                if (e.button === 2) return; // Ignora botão direito
-                e.stopPropagation(); // Impede que o Pan do mapa comece ao arrastar token
+                if (e.button === 2) return; 
+                e.stopPropagation();
 
                 draggedToken = tokenEl;
                 
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
 
-                // Pega posição inicial no espaço do mapa
                 const mapPos = getMapCoordinates(clientX, clientY);
                 startMapX = mapPos.x;
                 startMapY = mapPos.y;
 
-                // Pega posição inicial do token
                 tokenStartX = parseFloat(tokenEl.style.left) || 0;
                 tokenStartY = parseFloat(tokenEl.style.top) || 0;
 
@@ -809,18 +811,15 @@
             const endDrag = () => {
                 if (!draggedToken) return;
                 
-                // Snap to Grid (arredonda para o grid mais próximo)
                 let x = Math.round(parseFloat(draggedToken.style.left) / gridSize) * gridSize;
                 let y = Math.round(parseFloat(draggedToken.style.top) / gridSize) * gridSize;
                 
-                // Garante limites finais
                 x = Math.max(0, Math.min(mapWidth - tokenPixelSize, x));
                 y = Math.max(0, Math.min(mapHeight - tokenPixelSize, y));
                 
                 draggedToken.style.left = `${x}px`;
                 draggedToken.style.top = `${y}px`;
                 
-                // Salva no Firebase
                 updateToken(draggedToken.dataset.name, { x, y });
                 
                 draggedToken = null;
@@ -841,67 +840,89 @@
             document.getElementById(tabName).classList.add('active');
             event.currentTarget.classList.add('active');
         }
+
         function listenForOnlinePlayers() {
-            // Removido o filtro .where('last_seen') para mostrar todos os jogadores sempre
             playersCollection.onSnapshot(snapshot => {
-                    const playerListEl = document.getElementById('gm-player-list');
-                    playerListEl.innerHTML = snapshot.empty ? '<p class="text-secondary">Nenhum jogador encontrado.</p>' : '';
-                    
-                    // Converte para array para ordenar por nome em memória
                     const players = [];
                     snapshot.forEach(doc => players.push(doc.data()));
                     players.sort((a, b) => (a.charName || '').localeCompare(b.charName || ''));
+                    
+                    // Salva na variavel global para usar no render
+                    currentPlayersList = players;
+                    renderPlayerList();
 
-                    players.forEach(player => {
-                        const playerCard = document.createElement('div');
-                        playerCard.className = 'gm-player-card';
-
-                        const currentVigor = parseInt(player.vitals?.vigor || 0);
-                        const fort = parseInt(player.attributes?.fortitude || 0);
-                        const maxVigor = 6 + fort;
-                        const percentage = maxVigor > 0 ? Math.max(0, Math.min(100, (currentVigor / maxVigor) * 100)) : 0;
-                        let barColor = percentage > 50 ? 'var(--color-green)' : percentage > 25 ? 'var(--color-yellow)' : 'var(--color-red)';
-                        
-                        // Verifica se está online (últimos 5 min)
-                        const lastSeen = player.last_seen ? player.last_seen.toDate() : new Date(0);
-                        const isOnline = (Date.now() - lastSeen.getTime()) < 5 * 60 * 1000;
-                        const statusDot = isOnline ? '🟢' : '⚫';
-                        const statusTitle = isOnline ? 'Online' : 'Offline';
-
-                        // avatarFicha: Usado no painel. É a imagem da ficha (grande) ou placeholder.
-                        const avatarFicha = player.image || 'https://placehold.co/50x50/0f223d/ccd6f6?text=?';
-                        // avatarToken: Usado no MAPA. É a imagem de combate (pequena/token) ou placeholder.
-                        const avatarToken = player.combatImage || 'https://placehold.co/50x50/0f223d/ccd6f6?text=?';
-
-                        // Se estiver offline, deixa o card um pouco mais transparente
-                        if (!isOnline) playerCard.style.opacity = '0.7';
-
-                        playerCard.innerHTML = `
-                            <div class="gm-player-info">
-                                <img src="${avatarFicha}" class="gm-player-avatar" alt="Avatar">
-                                <div class="flex flex-col flex-grow">
-                                    <span class="gm-player-name text-sm">${player.charName}</span>
-                                    <span class="text-xs text-secondary" title="${statusTitle}">${statusDot} ${statusTitle}</span>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <button class="gm-control-btn" onclick="addPlayerTokenToMap('${player.charName}', '${avatarFicha}')" title="Adicionar ao Mapa">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/></svg>
-                                    </button>
-                                    <button class="gm-control-btn" onclick="openConditionModal('${player.charName}')" title="Atribuir Condições">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0M4.402 4.145c.223.384.467.802.73 1.252.264.45.546.92.841 1.407l.076.125c.31.51.638.99.98 1.442l.01.014c.324.428.628.81.89 1.133l.09.108c.181.22.327.403.438.545.11-.142.257-.325.438-.545l.09-.108c.262-.323.566-.705.89-1.133l.01-.014c.342-.452.67-.932.98-1.442l.076-.125c.295-.488.577-1.002.842-1.407.263-.45.506-.868.73-1.252a6.51 6.51 0 0 1-1.23 1.062c-.432.32-.88.552-1.296.696l-.06.02a4.6 4.6 0 0 1-1.103.224c-.383.032-.753.02-1.098-.034a4.5 4.5 0 0 1-1.04-.328l-.068-.027c-.45-.188-.882-.48-1.266-.876a6.52 6.52 0 0 1-1.23-1.062h.01zm-3.195 9.71c.432-.32.88-.552 1.296-.696l.06-.02a4.6 4.6 0 0 1 1.103-.224c.383-.032.753-.02 1.098.034.345.054.706.154 1.04.328l.068.027c.45.188.882.48 1.266.876.385.395.71.848.985 1.353a6.51 6.51 0 0 1-1.23-1.062c-.432-.32-.88-.552-1.296-.696l-.06-.02a4.6 4.6 0 0 1-1.103-.224c-.383-.032-.753-.02-1.098-.034a4.5 4.5 0 0 1-1.04-.328l-.068-.027c-.45-.188-.882-.48-1.266-.876a6.52 6.52 0 0 1-1.23-1.062c.224.384.468.802.73 1.252.264.45.546.92.841 1.407.295.488.577 1.002.842 1.407.263.45.506-.868.73 1.252h.01z"/></svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="w-full h-6 bg-tertiary rounded-full relative overflow-hidden border border-color">
-                                <div class="h-full rounded-full" style="width: ${percentage}%; background-color: ${barColor};"></div>
-                                <span class="absolute inset-0 flex items-center justify-center font-bold text-white text-sm">${currentVigor} / ${maxVigor}</span>
-                            </div>`;
-                        playerListEl.appendChild(playerCard);
-                    });
                 }, error => {
                     console.error("Erro ao buscar jogadores online: ", error);
                     document.getElementById('gm-player-list').innerHTML = '<p class="text-red-400">Erro ao carregar jogadores.</p>';
                 });
+        }
+
+        function renderPlayerList() {
+            const playerListEl = document.getElementById('gm-player-list');
+            playerListEl.innerHTML = '';
+            
+            if (currentPlayersList.length === 0) {
+                playerListEl.innerHTML = '<p class="text-secondary">Nenhum jogador encontrado.</p>';
+                return;
+            }
+
+            const now = Date.now();
+            let visibleCount = 0;
+
+            currentPlayersList.forEach(player => {
+                const lastSeen = player.last_seen ? player.last_seen.toDate() : new Date(0);
+                const isOnline = (now - lastSeen.getTime()) < 5 * 60 * 1000;
+                
+                // --- LÓGICA DO FILTRO ---
+                if (showOnlyOnline && !isOnline) {
+                    return; // Pula este jogador se o filtro estiver ativo e ele estiver offline
+                }
+
+                visibleCount++;
+                
+                const playerCard = document.createElement('div');
+                playerCard.className = 'gm-player-card';
+
+                const currentVigor = parseInt(player.vitals?.vigor || 0);
+                const fort = parseInt(player.attributes?.fortitude || 0);
+                const maxVigor = 6 + fort;
+                const percentage = maxVigor > 0 ? Math.max(0, Math.min(100, (currentVigor / maxVigor) * 100)) : 0;
+                let barColor = percentage > 50 ? 'var(--color-green)' : percentage > 25 ? 'var(--color-yellow)' : 'var(--color-red)';
+                
+                const statusDot = isOnline ? '🟢' : '⚫';
+                const statusTitle = isOnline ? 'Online' : 'Offline';
+
+                const avatarFicha = player.image || 'https://placehold.co/50x50/0f223d/ccd6f6?text=?';
+                const avatarToken = player.combatImage || 'https://placehold.co/50x50/0f223d/ccd6f6?text=?';
+
+                if (!isOnline) playerCard.style.opacity = '0.7';
+
+                playerCard.innerHTML = `
+                    <div class="gm-player-info">
+                        <img src="${avatarFicha}" class="gm-player-avatar" alt="Avatar">
+                        <div class="flex flex-col flex-grow">
+                            <span class="gm-player-name text-sm">${player.charName}</span>
+                            <span class="text-xs text-secondary" title="${statusTitle}">${statusDot} ${statusTitle}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="gm-control-btn" onclick="addPlayerTokenToMap('${player.charName}', '${avatarFicha}')" title="Adicionar ao Mapa">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/><path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/></svg>
+                            </button>
+                            <button class="gm-control-btn" onclick="openConditionModal('${player.charName}')" title="Atribuir Condições">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0M4.402 4.145c.223.384.467.802.73 1.252.264.45.546.92.841 1.407l.076.125c.31.51.638.99.98 1.442l.01.014c.324.428.628.81.89 1.133l.09.108c.181.22.327.403.438.545.11-.142.257-.325.438-.545l.09-.108c.262-.323.566-.705.89-1.133l.01-.014c.342-.452.67-.932.98-1.442l.076-.125c.295-.488.577-1.002.842-1.407.263-.45.506-.868.73-1.252a6.51 6.51 0 0 1-1.23 1.062c-.432.32-.88.552-1.296.696l-.06.02a4.6 4.6 0 0 1-1.103.224c-.383.032-.753.02-1.098-.034a4.5 4.5 0 0 1-1.04-.328l-.068-.027c-.45-.188-.882-.48-1.266-.876a6.52 6.52 0 0 1-1.23-1.062h.01zm-3.195 9.71c.432-.32.88-.552 1.296-.696l.06-.02a4.6 4.6 0 0 1 1.103-.224c.383-.032.753-.02 1.098.034.345.054.706.154 1.04.328l.068.027c.45.188.882.48 1.266.876.385.395.71.848.985 1.353a6.51 6.51 0 0 1-1.23-1.062c-.432-.32-.88-.552-1.296-.696l-.06-.02a4.6 4.6 0 0 1-1.103-.224c-.383-.032-.753-.02-1.098-.034a4.5 4.5 0 0 1-1.04-.328l-.068-.027c-.45-.188-.882-.48-1.266-.876a6.52 6.52 0 0 1-1.23-1.062c.224.384.468.802.73 1.252.264.45.546.92.841 1.407.295.488.577 1.002.842 1.407.263.45.506-.868.73 1.252h.01z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="w-full h-6 bg-tertiary rounded-full relative overflow-hidden border border-color">
+                        <div class="h-full rounded-full" style="width: ${percentage}%; background-color: ${barColor};"></div>
+                        <span class="absolute inset-0 flex items-center justify-center font-bold text-white text-sm">${currentVigor} / ${maxVigor}</span>
+                    </div>`;
+                playerListEl.appendChild(playerCard);
+            });
+            
+            if (visibleCount === 0) {
+                 playerListEl.innerHTML = '<p class="text-secondary text-sm italic mt-2">Nenhum jogador online no momento.</p>';
+            }
         }
         
         async function openConditionModal(charName) {
@@ -960,6 +981,16 @@
             document.getElementById('token-image-upload').addEventListener('change', handleTokenImageUpload);
             document.getElementById('token-image-cancel').addEventListener('click', closeTokenImageAdjustModal);
             document.getElementById('token-image-confirm').addEventListener('click', confirmTokenImageCrop);
+            
+            // NOVO: Listener para o botão de toggle de offline
+            document.getElementById('toggle-offline-players-btn').addEventListener('click', () => {
+                showOnlyOnline = !showOnlyOnline;
+                // Atualiza o texto do botão
+                const btn = document.getElementById('toggle-offline-players-btn');
+                btn.textContent = showOnlyOnline ? "Mostrar Todos" : "Ocultar Offline";
+                // Re-renderiza a lista sem precisar buscar do banco de novo
+                renderPlayerList();
+            });
 
             const windows = document.querySelectorAll('.modal-overlay');
             windows.forEach(win => win.addEventListener('mousedown', () => bringToFront(win), true));
