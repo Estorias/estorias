@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mestre de Batalha - Valegrís</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #0f0f0f; /* Match dm.html */
+            --bg-sidebar: #050505;
+            --bg-card: #e5e5e5;
+            --text-main: #111; 
+            --text-light: #e0e0e0;
+            --role-color: #333; 
+            --accent-red: #991b1b;
+            --accent-green: #166534;
+            --accent-gold: #d4a373; /* Match dm.html accent */
+            --border-color: #333;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            background-color: var(--bg-dark); 
+            font-family: 'EB Garamond', serif; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            overflow: hidden;
+            color: var(--text-light);
+        }
+
+        /* --- TOP BAR --- */
+        .top-bar {
+            height: 50px;
+            background: #1a1a1a;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1rem;
+            flex-shrink: 0;
+        }
+        .app-title { font-family: 'Cinzel', serif; color: var(--accent-gold); font-weight: bold; font-size: 1.2rem; }
+        
+        .layout-controls { display: flex; gap: 10px; }
+        .btn-layout {
+            background: #333; border: 1px solid #555; color: #ccc;
+            padding: 5px 10px; cursor: pointer; border-radius: 4px; font-size: 0.8rem;
+        }
+        .btn-layout:hover { background: #444; color: white; }
+        .btn-layout.active { background: var(--accent-gold); color: black; border-color: var(--accent-gold); }
+
+        /* --- MAIN LAYOUT --- */
+        .workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            height: calc(100vh - 50px);
+        }
+
+        /* LEFT PANEL: OPPONENTS */
+        .panel-opponents {
+            flex: 1;
+            display: flex;
+            border-right: 2px solid #000;
+            min-width: 0;
+            transition: flex 0.3s;
+        }
+
+        /* RIGHT PANEL: PLAYERS IFRAME */
+        .panel-players {
+            flex: 1;
+            background: black;
+            min-width: 0;
+            transition: flex 0.3s;
+            position: relative;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* --- OPPONENT MANAGER STYLES (Adapted) --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header { padding: 10px; border-bottom: 1px solid var(--border-color); background: rgba(255,255,255,0.05); }
+        .upload-area {
+            background: #222; border: 1px dashed #555; border-radius: 4px;
+            text-align: center; padding: 8px; cursor: pointer; position: relative;
+        }
+        .upload-area:hover { border-color: var(--accent-gold); }
+        .upload-area input { position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer;}
+
+        .combatants-list { flex: 1; overflow-y: auto; padding: 5px; }
+        .combatant-item {
+            background: #1a1a1a; border: 1px solid #333; border-left: 3px solid #555;
+            padding: 8px; margin-bottom: 6px; cursor: pointer; position: relative;
+        }
+        .combatant-item.active { background: #2a2a2a; border-color: #666; }
+        .c-name { font-family: 'Cinzel'; font-weight: bold; font-size: 0.85rem; display: block;}
+        .c-mini-bars { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; }
+        .mini-bar { height: 3px; background: #333; width: 100%; }
+        .mini-fill { height: 100%; }
+        
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-image: radial-gradient(circle at center, #1a2332 0%, #0c1421 100%);
+            display: flex; justify-content: center; align-items: flex-start;
+        }
+
+        /* CARD */
+        .sheet-card {
+            width: 100%; max-width: 600px;
+            background-color: var(--bg-card); color: var(--text-main);
+            padding: 1.5rem; position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            border: 4px solid var(--role-color); border-radius: 2px;
+        }
+        .sheet-header { display: flex; gap: 1rem; align-items: center; border-bottom: 3px solid var(--role-color); padding-bottom: 10px; margin-bottom: 1rem; }
+        .sheet-name { font-family: 'Cinzel'; font-size: 1.5rem; font-weight: 900; line-height: 1; text-transform: uppercase;}
+        
+        .combat-section { background: rgba(255,255,255,0.5); padding: 10px; border-radius: 6px; margin-bottom: 1rem; border: 1px solid #ccc; }
+        .resource-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .btn-ctrl { 
+            width: 30px; height: 30px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; 
+        }
+        .btn-minus { background: #fca5a5; color: #7f1d1d; }
+        .btn-plus { background: #86efac; color: #14532d; }
+        .res-val { font-family: 'Cinzel'; font-size: 1.4rem; font-weight: bold; min-width: 50px; text-align: center; }
+        
+        .progress-bar { width: 100%; height: 10px; background: #ccc; border-radius: 5px; overflow: hidden; margin-top: 5px; }
+        .progress-fill { height: 100%; transition: width 0.3s, background 0.3s; }
+
+        .stress-box { width: 18px; height: 18px; border: 2px solid #333; background: rgba(255,255,255,0.3); cursor: pointer; display: inline-block; margin-right: 2px; vertical-align: middle;}
+        .stress-box.checked { background: #333; }
+        .stress-box.checked::after { content: ''; display: block; width: 100%; height: 100%; }
+
+        .attributes-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; font-size: 0.8rem; border-top: 1px solid #999; border-bottom: 1px solid #999; padding: 8px 0; margin-bottom: 10px; text-align: center; }
+        .attr-lbl { font-weight: bold; display: block; font-family: 'Cinzel'; color: #555; }
+        
+        /* CONDITIONS BADGES */
+        .conditions-container { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+        .badge { font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid transparent; text-transform: uppercase; }
+        .badge-bonus { background: #dcfce7; color: #166534; border-color: #166534; }
+        .badge-onus { background: #fee2e2; color: #991b1b; border-color: #991b1b; }
+        .badge-cond { background: #fef9c3; color: #854d0e; border-color: #854d0e; }
+
+        .btn-cond {
+            background: #333; color: white; border: none; padding: 5px 10px; font-size: 0.8rem; cursor: pointer; margin-bottom: 10px; border-radius: 4px; display: flex; align-items: center; gap: 5px;
+        }
+        .btn-cond:hover { background: #555; }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: #1a1a1a; width: 500px; max-width: 90%; max-height: 80vh; overflow-y: auto;
+            border: 1px solid #444; padding: 20px; color: #eee; border-radius: 6px;
+        }
+        .cond-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
+        .cond-option {
+            display: flex; align-items: center; gap: 8px; padding: 5px; border-radius: 4px; cursor: pointer;
+        }
+        .cond-option:hover { background: #333; }
+        .cond-option input { accent-color: var(--accent-gold); transform: scale(1.2); }
+        .cond-lbl { font-size: 0.9rem; }
+        .cond-bonus { color: #86efac; }
+        .cond-onus { color: #fca5a5; }
+        .cond-neutral { color: #fde047; }
+
+        .config-box { padding: 10px; background: #000; color: #aaa; font-size: 0.8rem; display: flex; align-items: center; gap: 10px;}
+        .config-box input { background: #222; border: 1px solid #444; color: white; padding: 2px 5px; flex: 1;}
+
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="app-title"><i class="fa-solid fa-crown"></i> Mestre de Batalha</div>
+        
+        <div class="config-box">
+            <span>Arquivo Jogadores:</span>
+            <input type="text" id="dm-path" value="dm.html" placeholder="dm.html">
+            <button class="btn-layout" onclick="reloadIframe()"><i class="fa-solid fa-sync"></i></button>
+        </div>
+
+        <div class="layout-controls">
+            <button class="btn-layout active" onclick="setLayout('split')" title="Dividir Tela"><i class="fa-solid fa-columns"></i></button>
+            <button class="btn-layout" onclick="setLayout('full-opp')" title="Apenas Oponentes"><i class="fa-solid fa-dragon"></i></button>
+            <button class="btn-layout" onclick="setLayout('full-dm')" title="Apenas Jogadores"><i class="fa-solid fa-users"></i></button>
+        </div>
+    </div>
+
+    <div class="workspace">
+        <!-- PAINEL DE OPONENTES -->
+        <div class="panel-opponents" id="panel-opp">
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="upload-area">
+                        <span><i class="fa-solid fa-plus"></i> Add Oponentes (JSON)</span>
+                        <input type="file" multiple accept=".json" onchange="handleFiles(event)">
+                    </div>
+                </div>
+                <div id="combatants-list" class="combatants-list"></div>
+                <div style="padding:10px; border-top:1px solid #333; text-align:center;">
+                    <button class="btn-layout" style="width:100%; background:#7f1d1d;" onclick="clearAll()">Limpar Tudo</button>
+                </div>
+            </aside>
+            <main class="main-content" id="main-area">
+                <div style="color:#555; text-align:center; margin-top:50px;">
+                    <i class="fa-solid fa-dungeon" style="font-size:3rem; margin-bottom:10px;"></i><br>
+                    Selecione ou carregue um oponente.
+                </div>
+            </main>
+        </div>
+
+        <!-- PAINEL DE JOGADORES (IFRAME) -->
+        <div class="panel-players" id="panel-dm">
+            <iframe id="dm-frame" src="dm.html"></iframe>
+            <!-- Fallback msg if iframe fails -->
+            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#555; z-index:-1; text-align:center;">
+                <p>Carregando Gestor de Jogadores...</p>
+                <small>Certifique-se que "dm.html" está na mesma pasta.</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONDIÇÕES -->
+    <div id="modal-conditions" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content">
+            <h3 style="font-family:'Cinzel'; color:var(--accent-gold); border-bottom:1px solid #444; padding-bottom:10px;">Gerir Condições</h3>
+            <div id="cond-list-container" class="cond-grid"></div>
+            <div style="margin-top:20px; text-align:right;">
+                <button class="btn-layout" style="background:var(--accent-green); color:black; font-weight:bold;" onclick="saveConditions()">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA DE CONDIÇÕES (Sincronizada com DM.HTML) ---
+        const allConditions = {
+            'protegido': { name: 'Protegido (x)', type: 'bonus' }, 
+            'vantagem': { name: 'Vantagem', type: 'bonus'}, 
+            'inspirado': { name: 'Inspirado', type: 'bonus' },
+            'focado': { name: 'Focado', type: 'bonus' },
+            'fortalecido': { name: 'Fortalecido', type: 'bonus' },
+            'impetuoso': { name: 'Impetuoso', type: 'bonus' },
+            'agilizado': { name: 'Agilizado', type: 'bonus' },
+            'preparado': { name: 'Preparado', type: 'bonus' },
+            'revitalizado': { name: 'Revitalizado', type: 'bonus' },
+            'motivado': { name: 'Motivado', type: 'bonus' },
+            'destemido': { name: 'Destemido', type: 'bonus' },
+            
+            'vulneravel': { name: 'Vulnerável (x)', type: 'onus' },
+            'desmotivado': { name: 'Desmotivado', type: 'onus' },
+            'enfraquecido': { name: 'Enfraquecido', type: 'onus' },
+            'lento': { name: 'Lento', type: 'onus' },
+            'desvantagem': { name: 'Desvantagem', type: 'onus' },
+            'em-apuros': { name: 'Em apuros', type: 'onus' },
+            'preso': { name: 'Preso', type: 'onus' },
+            'cansado': { name: 'Cansado', type: 'onus' },
+            'desorientado': { name: 'Desorientado', type: 'onus' },
+            'assustado': { name: 'Assustado', type: 'onus' },
+            'ferido': { name: 'Ferido', type: 'onus' },
+            'baixa-visibilidade': { name: 'Baixa Visibilidade', type: 'onus' },
+            
+            'apavorado': { name: 'Apavorado', type: 'condition' },
+            'gravemente-ferido': { name: 'Gravemente Ferido', type: 'condition' },
+            'exausto': { name: 'Exausto', type: 'condition' },
+            'incapacitado': { name: 'Incapacitado', type: 'condition' },
+            'cego': { name: 'Cego', type: 'condition' },
+            'impedido': { name: 'Impedido', type: 'condition' },
+            'epifania': { name: 'Epifania', type: 'condition' },
+        };
+
+        // --- GESTÃO DE OPONENTES ---
+        let combatants = [];
+        let activeId = null;
+
+        const roleColors = {
+            'atacante': '#ef4444', 'defensor': '#3b82f6', 'controlador': '#a855f7', 'bucha': '#10b981', 'grupo': '#f97316'
+        };
+
+        window.onload = () => {
+            // Load Combatants
+            const saved = localStorage.getItem('estorias_combatants');
+            if (saved) {
+                try { combatants = JSON.parse(saved); renderList(); } 
+                catch(e) { console.error(e); }
+            }
+            // Load Iframe Path Preference
+            const savedPath = localStorage.getItem('estorias_dm_path');
+            if(savedPath) {
+                document.getElementById('dm-path').value = savedPath;
+                document.getElementById('dm-frame').src = savedPath;
+            }
+        };
+
+        function handleFiles(e) {
+            Array.from(e.target.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try { addCreature(JSON.parse(ev.target.result)); } 
+                    catch(err) { alert("JSON inválido: " + file.name); }
+                };
+                reader.readAsText(file);
+            });
+            e.target.value = '';
+        }
+
+        function addCreature(data) {
+            const id = Date.now().toString() + Math.random().toString(36).substr(2, 5);
+            const newC = {
+                id: id,
+                base: data,
+                current: {
+                    vigor: parseInt(data.stats.vigor)||0,
+                    pv: parseInt(data.stats.pv)||0,
+                    stress: 0,
+                    maxVigor: parseInt(data.stats.vigor)||0,
+                    maxPV: parseInt(data.stats.pv)||0,
+                    maxStress: parseInt(data.stats.estresse)||0,
+                    conditions: [] // NEW: Condições Array
+                }
+            };
+            combatants.push(newC);
+            saveData();
+            renderList();
+            selectCreature(id);
+        }
+
+        function saveData() {
+            localStorage.setItem('estorias_combatants', JSON.stringify(combatants));
+        }
+
+        function removeCreature(id, e) {
+            if(e) e.stopPropagation();
+            if(!confirm("Remover?")) return;
+            combatants = combatants.filter(c => c.id !== id);
+            if(activeId === id) { activeId = null; document.getElementById('main-area').innerHTML = ''; }
+            saveData();
+            renderList();
+        }
+
+        function clearAll() {
+            if(!confirm("Limpar lista?")) return;
+            combatants = []; activeId = null;
+            saveData(); renderList();
+            document.getElementById('main-area').innerHTML = '';
+        }
+
+        function selectCreature(id) {
+            activeId = id;
+            renderList();
+            renderCard();
+        }
+
+        function renderList() {
+            const list = document.getElementById('combatants-list');
+            list.innerHTML = '';
+            combatants.forEach(c => {
+                const roleColor = roleColors[c.base.papel] || '#555';
+                const div = document.createElement('div');
+                div.className = `combatant-item ${c.id === activeId ? 'active' : ''}`;
+                div.style.borderLeftColor = roleColor;
+                div.onclick = () => selectCreature(c.id);
+                
+                const vigPct = Math.min(100, (c.current.vigor/c.current.maxVigor)*100);
+                const pvPct = Math.min(100, (c.current.pv/c.current.maxPV)*100);
+                
+                div.innerHTML = `
+                    <div style="display:flex; justify-content:space-between;">
+                        <span class="c-name">${c.base.nome}</span>
+                        <span onclick="removeCreature('${c.id}', event)" style="color:#555; cursor:pointer;">&times;</span>
+                    </div>
+                    <div style="font-size:0.7rem; color:#888;">${c.base.papel}</div>
+                    <div class="c-mini-bars">
+                        <div class="mini-bar"><div class="mini-fill" style="width:${vigPct}%; background:${vigPct<=25?'#ef4444':roleColor}"></div></div>
+                        <div class="mini-bar"><div class="mini-fill" style="width:${pvPct}%; background:#333;"></div></div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function renderCard() {
+            if(!activeId) return;
+            const c = combatants.find(x => x.id === activeId);
+            if(!c) return;
+
+            const roleColor = roleColors[c.base.papel] || '#333';
+            document.documentElement.style.setProperty('--role-color', roleColor);
+            const container = document.getElementById('main-area');
+            const fmt = v => (parseInt(v)>=0 ? `+${v}` : v);
+
+            // Condições Badges
+            let condBadges = '';
+            if(c.current.conditions && c.current.conditions.length > 0) {
+                condBadges = c.current.conditions.map(k => {
+                    const info = allConditions[k];
+                    if(!info) return '';
+                    let cls = 'badge-cond';
+                    if(info.type === 'bonus') cls = 'badge-bonus';
+                    if(info.type === 'onus') cls = 'badge-onus';
+                    return `<span class="badge ${cls}">${info.name.split('(')[0]}</span>`;
+                }).join('');
+            } else {
+                condBadges = `<span style="font-size:0.7rem; color:#888; font-style:italic;">Sem condições ativas</span>`;
+            }
+
+            // Habilidades
+            let abilities = '';
+            if(c.base.habilidades.especiais) {
+                abilities = c.base.habilidades.especiais.split('\n').map(l => {
+                    if(!l.trim()) return '';
+                    const p = l.split(':');
+                    return `<div style="margin-bottom:5px; font-size:0.9rem;">${p.length>1 ? `<strong style="color:#991b1b; font-family:'Cinzel'">${p[0]}:</strong> ${p.slice(1).join(':')}` : l}</div>`;
+                }).join('');
+            }
+
+            container.innerHTML = `
+                <div class="sheet-card">
+                    <div class="sheet-header">
+                        <div style="width:60px; height:60px; border-radius:50%; border:3px solid ${roleColor}; background:#ccc; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                            <i class="fa-solid fa-dragon" style="font-size:1.5rem; color:#555;"></i>
+                        </div>
+                        <div style="flex:1;">
+                            <div class="sheet-name">${c.base.nome}</div>
+                            <div style="font-size:0.8rem; color:${roleColor}; font-weight:bold; text-transform:uppercase;">${c.base.papel} • ${c.base.tamanho}</div>
+                        </div>
+                    </div>
+
+                    <div class="combat-section">
+                        <!-- VIGOR -->
+                        <div class="resource-row">
+                            <span style="font-family:'Cinzel'; font-weight:bold;">Vigor</span>
+                            <div style="display:flex; align-items:center; gap:5px;">
+                                <button class="btn-ctrl btn-minus" onclick="modStat('vigor', -5)">-5</button>
+                                <button class="btn-ctrl btn-minus" onclick="modStat('vigor', -1)">-1</button>
+                                <span class="res-val" style="color:${(c.current.vigor/c.current.maxVigor)<=0.25?'#ef4444':'#111'}">${c.current.vigor}</span>
+                                <small>/${c.current.maxVigor}</small>
+                                <button class="btn-ctrl btn-plus" onclick="modStat('vigor', 1)">+1</button>
+                                <button class="btn-ctrl btn-plus" onclick="modStat('vigor', 5)">+5</button>
+                            </div>
+                        </div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${(c.current.vigor/c.current.maxVigor)*100}%; background:${(c.current.vigor/c.current.maxVigor)<=0.25?'#ef4444':roleColor}"></div></div>
+                        
+                        <hr style="border:0; border-top:1px dashed #999; margin:10px 0;">
+
+                        <!-- PV -->
+                        <div class="resource-row">
+                            <span style="font-family:'Cinzel'; font-weight:bold;">PV</span>
+                            <div style="display:flex; align-items:center; gap:5px;">
+                                <button class="btn-ctrl btn-minus" onclick="modStat('pv', -1)">-1</button>
+                                <span class="res-val">${c.current.pv}</span>
+                                <small>/${c.current.maxPV}</small>
+                                <button class="btn-ctrl btn-plus" onclick="modStat('pv', 1)">+1</button>
+                            </div>
+                        </div>
+
+                        <!-- ESTRESSE -->
+                        <div style="margin-top:10px; display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong style="font-family:'Cinzel'; font-size:0.9rem;">Estresse:</strong>
+                                ${generateStress(c.current.maxStress, c.current.stress)}
+                            </div>
+                            <div style="font-size:0.8rem;"><strong>Tenacidade:</strong> ${c.base.stats.tenacidade}</div>
+                        </div>
+                    </div>
+
+                    <!-- CONDIÇÕES -->
+                    <button class="btn-cond" onclick="openConditions()"><i class="fa-solid fa-tags"></i> Gerir Condições</button>
+                    <div class="conditions-container">${condBadges}</div>
+
+                    <!-- ATRIBUTOS -->
+                    <div class="attributes-grid">
+                        <div><span class="attr-lbl">FOR</span>${fmt(c.base.atributos.for)}</div>
+                        <div><span class="attr-lbl">DES</span>${fmt(c.base.atributos.des)}</div>
+                        <div><span class="attr-lbl">VON</span>${fmt(c.base.atributos.von)}</div>
+                        <div><span class="attr-lbl">FORT</span>${fmt(c.base.atributos.fort)}</div>
+                        <div><span class="attr-lbl">CRI</span>${fmt(c.base.atributos.cri)}</div>
+                        <div><span class="attr-lbl">DIS</span>${fmt(c.base.atributos.dis)}</div>
+                    </div>
+
+                    <!-- INFO EXTRA -->
+                     <div style="font-size:0.8rem; display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-bottom:10px;">
+                        <div><strong>Prot:</strong> ${c.base.resistencias.protegido||'-'}</div>
+                        <div><strong>Vuln:</strong> ${c.base.resistencias.vulneravel||'-'}</div>
+                        <div><strong>Imune:</strong> ${c.base.resistencias.imune||'-'}</div>
+                        <div><strong>Vel:</strong> ${c.base.stats.velocidade||'9m'}</div>
+                    </div>
+                    
+                    <div style="background:rgba(0,0,0,0.05); padding:10px; border-radius:4px;">
+                        ${c.base.habilidades.papel ? `<div style="margin-bottom:5px; font-size:0.9rem;"><strong>Passiva:</strong> ${c.base.habilidades.papel}</div>` : ''}
+                        ${abilities}
+                    </div>
+                </div>
+            `;
+        }
+
+        function modStat(type, val) {
+            const c = combatants.find(x => x.id === activeId);
+            if(!c) return;
+            if(type==='vigor') c.current.vigor = Math.max(0, c.current.vigor + val);
+            if(type==='pv') c.current.pv = Math.max(0, c.current.pv + val);
+            saveData(); renderList(); renderCard();
+        }
+
+        function toggleStress(idx) {
+            const c = combatants.find(x => x.id === activeId);
+            if(!c) return;
+            const click = idx + 1;
+            c.current.stress = (click === c.current.stress) ? click - 1 : click;
+            saveData(); renderCard();
+        }
+
+        function generateStress(max, cur) {
+            let h = '';
+            for(let i=0; i<max; i++) h += `<div class="stress-box ${i<cur?'checked':''}" onclick="toggleStress(${i})"></div>`;
+            return h;
+        }
+
+        // --- CONDIÇÕES MODAL ---
+        function openConditions() {
+            const c = combatants.find(x => x.id === activeId);
+            if(!c) return;
+            
+            const grid = document.getElementById('cond-list-container');
+            grid.innerHTML = '';
+            
+            // Safe copy of conditions, default to empty array
+            const currentConds = c.current.conditions || [];
+
+            Object.keys(allConditions).sort().forEach(k => {
+                const info = allConditions[k];
+                const isChecked = currentConds.includes(k);
+                
+                let cls = 'cond-neutral';
+                if(info.type==='bonus') cls = 'cond-bonus';
+                if(info.type==='onus') cls = 'cond-onus';
+
+                const div = document.createElement('div');
+                div.className = 'cond-option';
+                div.innerHTML = `
+                    <input type="checkbox" id="chk-${k}" ${isChecked?'checked':''}>
+                    <label for="chk-${k}" class="cond-lbl ${cls}">${info.name}</label>
+                `;
+                // Add click event to the whole div to toggle checkbox
+                div.onclick = (e) => {
+                    if(e.target.tagName !== 'INPUT') {
+                        const chk = div.querySelector('input');
+                        chk.checked = !chk.checked;
+                    }
+                };
+                grid.appendChild(div);
+            });
+            
+            document.getElementById('modal-conditions').style.display = 'flex';
+        }
+
+        function saveConditions() {
+            const c = combatants.find(x => x.id === activeId);
+            if(!c) return;
+            
+            const checkboxes = document.querySelectorAll('#cond-list-container input[type="checkbox"]');
+            const newConds = [];
+            checkboxes.forEach(cb => {
+                if(cb.checked) newConds.push(cb.id.replace('chk-', ''));
+            });
+            
+            c.current.conditions = newConds;
+            saveData();
+            renderCard();
+            document.getElementById('modal-conditions').style.display = 'none';
+        }
+
+        function closeModal(e) {
+            if(e.target.id === 'modal-conditions') e.target.style.display = 'none';
+        }
+
+        // --- LAYOUT ---
+        function setLayout(mode) {
+            const opp = document.getElementById('panel-opp');
+            const dm = document.getElementById('panel-dm');
+            const btns = document.querySelectorAll('.btn-layout');
+            btns.forEach(b => b.classList.remove('active'));
+
+            if(mode === 'split') {
+                opp.style.display = 'flex'; dm.style.display = 'block';
+                opp.style.width = '50%'; dm.style.width = '50%';
+                btns[0].classList.add('active');
+            } else if (mode === 'full-opp') {
+                opp.style.display = 'flex'; dm.style.display = 'none';
+                opp.style.width = '100%';
+                btns[1].classList.add('active');
+            } else {
+                opp.style.display = 'none'; dm.style.display = 'block';
+                dm.style.width = '100%';
+                btns[2].classList.add('active');
+            }
+        }
+
+        function reloadIframe() {
+            const path = document.getElementById('dm-path').value;
+            localStorage.setItem('estorias_dm_path', path);
+            document.getElementById('dm-frame').src = path;
+        }
+
+    </script>
+</body>
+</html>
